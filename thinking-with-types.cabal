@@ -1,0 +1,83 @@
+cabal-version: 2.4
+name:          thinking-with-types
+version:       0.1.0.0
+build-type:    Simple
+
+library
+    exposed-modules:
+        AdHocSingletons
+        Algebra
+        Commander
+        Constraints
+        Database
+        Defunc
+        DeriveAnyClass
+        FCTF
+        GADTs
+        Generic.HKDNames
+        Generic.Monoid
+        Generic.Omit
+        HKD
+        ImpredicativeTypes
+        JSONSchema
+        Kan
+        Kinds
+        Misc
+        NoImpredicativeTypes
+        OpenProduct
+        OpenSum
+        PosNeg
+        Printf
+        PrintfTypes
+        QuantifiedConstraints
+        RankN
+        Roles
+        ST
+        Sigma
+        Singletons
+        SingletonsTH
+        TicTacToe
+        TypeApps
+        War.Age
+        War.Ecstasy
+        War.Polysemy
+        War.Refinery
+
+    hs-source-dirs:     app
+    default-language:   Haskell2010
+    default-extensions:
+        BangPatterns BinaryLiterals ConstrainedClassMethods ConstraintKinds
+        DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric
+        DeriveLift DeriveTraversable DoAndIfThenElse EmptyCase
+        EmptyDataDecls EmptyDataDeriving ExistentialQuantification
+        ExplicitForAll FlexibleContexts FlexibleInstances
+        ForeignFunctionInterface GADTSyntax GeneralisedNewtypeDeriving
+        HexFloatLiterals ImplicitPrelude ImportQualifiedPost InstanceSigs
+        KindSignatures MonomorphismRestriction MultiParamTypeClasses
+        NamedFieldPuns NumericUnderscores PatternGuards PolyKinds
+        PostfixOperators RankNTypes RelaxedPolyRec ScopedTypeVariables
+        StandaloneDeriving StandaloneKindSignatures StarIsType
+        TraditionalRecordSyntax TupleSections TypeApplications
+        TypeOperators TypeSynonymInstances
+
+    ghc-options:        -Wall
+    build-depends:
+        aeson >=2.1.0.0 && <2.2,
+        base >=4.16.2.0 && <4.17,
+        bytestring >=0.11.3.1 && <0.12,
+        constraints >=0.13.4 && <0.14,
+        containers >=0.6.5.1 && <0.7,
+        first-class-families >=0.8.0.1 && <0.9,
+        inspection-testing ==0.5.*,
+        kan-extensions >=5.2.5 && <5.3,
+        kind-generics >=0.4.1.4 && <0.5,
+        kind-generics-th >=0.2.2.3 && <0.3,
+        lens >=5.1.1 && <5.2,
+        mtl >=2.2.2 && <2.3,
+        singletons >=3.0.1 && <3.1,
+        singletons-base ==3.1.*,
+        singletons-th ==3.1.*,
+        text >=1.2.5.0 && <1.3,
+        transformers >=0.5.6.2 && <0.6,
+        vector >=0.13.0.0 && <0.14,
+        witherable >=0.4.2 && <0.5
