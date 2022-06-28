@@ -1,9 +1,7 @@
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 
--- # pragmas
 module Kan where
 
--- # imports
 import Data.Functor.Yoneda
 import Data.Functor.Day.Curried
 import Control.Monad.Codensity
@@ -19,4 +17,3 @@ instance Functor (Yoneda f) where
   fmap f (Yoneda y) = Yoneda (\k -> y (k . f))
 
 -}
-

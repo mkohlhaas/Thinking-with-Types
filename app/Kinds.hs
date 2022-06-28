@@ -1,49 +1,43 @@
--- # pragmas
-{-# LANGUAGE DataKinds    #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
-
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 
 module Kinds where
 
--- # imports
+-- # typelits
+import GHC.TypeLits ()
 import Prelude (IO)
 
--- # typelits
-import GHC.TypeLits
-
-data Bool
-  = True
-  | False
+data Bool = True | False
 
 or :: Bool -> Bool -> Bool
-or True  _ = True
+or True _ = True
 or False y = y
 
 -- # TFOr
 type Or :: Bool -> Bool -> Bool
 type family Or x y where
-  Or 'True  y = 'True
+  Or 'True y = 'True
   Or 'False y = y
 
 type And :: Bool -> Bool -> Bool
 type family And x y where
-  And 'True  y = y
+  And 'True y = y
   And 'False y = 'False
 
 type Not :: Bool -> Bool
 type family Not x where
-  Not 'True  = 'False
+  Not 'True = 'False
   Not 'False = 'True
 
 map :: (a -> b) -> [a] -> [b]
-map _ []       = []
+map _ [] = []
 map f (a : as) = f a : map f as
 
 -- # TFMap
 type Map :: (a -> b) -> [a] -> [b]
 type family Map f xs where
-  Map f '[]       = '[]
+  Map f '[] = '[]
   Map f (x ': xs) = f x ': Map f xs
 
 type Foo :: Bool -> Bool -> Bool
@@ -65,9 +59,7 @@ doSensitiveThings = ...
 
 -}
 
-data UserType
-  = User
-  | Admin
+data UserType = User | Admin
 
 {-
 

@@ -1,23 +1,19 @@
-{-# LANGUAGE DataKinds            #-}
-{-# LANGUAGE TemplateHaskell      #-}
-{-# LANGUAGE TypeFamilies         #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Generic.HKDNames where
 
-import Data.Kind
-import GHC.Generics
-import Generics.Kind
-import Generics.Kind.TH
-import Data.Functor.Const
-import GHC.TypeLits
+import Data.Functor.Const (Const (Const))
+import Data.Kind (Constraint, Type)
+import GHC.Generics (C1, D1, Generic, M1 (M1), Meta (MetaSel), S1, U1 (..), type (:*:) (..))
+import GHC.TypeLits (KnownSymbol, symbolVal)
+import Generics.Kind (Atom ((:@:)), Field (Field), GenericK (toK), LoT, LoT1, Var0)
+import Generics.Kind.TH (deriveGenericK)
 
-
-data Person f = Person
-  { personAge  :: f Int
-  , personName :: f String
-  }
-  deriving Generic
+data Person f = Person { personAge :: f Int, personName :: f String }
+  deriving (Generic)
 
 deriving instance (Show (f Int), Show (f String)) => Show (Person f)
 
@@ -29,32 +25,20 @@ type GNames :: (LoT HKDKind -> Type) -> Constraint
 class GNames f where
   gnames :: f (LoT1 (Const String))
 
-instance (GNames f, GNames g)
-      => GNames (f :*: g)
-         where
+instance (GNames f, GNames g) => GNames (f :*: g) where
   gnames = gnames :*: gnames
 
-instance GNames f
-      => GNames (C1 _1 f)
-         where
+instance GNames f => GNames (C1 _1 f) where
   gnames = M1 gnames
 
-instance GNames f
-      => GNames (D1 _1 f)
-         where
+instance GNames f => GNames (D1 _1 f) where
   gnames = M1 gnames
 
-instance KnownSymbol name
-      => GNames (S1 ('MetaSel ('Just name) _1 _2 _3)
-                    (Field (Var0 ':@: a)))
-         where
+instance KnownSymbol name => GNames ( S1 ('MetaSel ('Just name) _1 _2 _3) (Field (Var0 ':@: a))) where
   gnames = M1 $ Field $ Const $ symbolVal $ Proxy @name
 
 instance GNames U1 where
   gnames = U1
 
-
 personNames :: Person (Const String)
 personNames = toK gnames
-
-

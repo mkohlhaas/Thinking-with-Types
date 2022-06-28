@@ -1,40 +1,33 @@
 {-# LANGUAGE ImpredicativeTypes #-}
-
-{-# LANGUAGE NumDecimals        #-}
-
+{-# LANGUAGE NumDecimals #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 module ImpredicativeTypes where
 
-import Control.Concurrent
+import Control.Concurrent (MVar, forkIO, newEmptyMVar, putMVar, takeMVar, threadDelay)
 import Control.Exception (bracket_)
 import Control.Monad (void)
-
 
 makeSerial :: IO (forall a. IO a -> IO a)
 makeSerial = fmap locking newEmptyMVar
 
-
 locking :: MVar () -> (forall a. IO a -> IO a)
-locking lock =
-  bracket_
-    (putMVar lock ())
-    (takeMVar lock)
+locking lock = bracket_ (putMVar lock ()) (takeMVar lock)
 
 dump :: (IO () -> IO ()) -> IO ()
-dump f =
-    void $ forkIO $ do
-      f $ putStrLn "hello"
-      f $ putStrLn "hello"
+dump f = void $
+  forkIO $ do
+    f $ putStrLn "hello"
+    f $ putStrLn "hello"
 
 serialized :: IO ()
 serialized = do
-  makeSerial >>= \serial -> do  -- ! 1
+  makeSerial >>= \serial -> do
+    -- ! 1
     dump serial
     dump serial
 
   threadDelay 1e5
-
 
 interleaved :: IO ()
 interleaved = do
@@ -51,4 +44,3 @@ g $$ a = g a
 
 blah :: Int
 blah = yo $$ reverse
-

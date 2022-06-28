@@ -23,4 +23,3 @@ class Contravariant f where
 
 class Invariant f where
   invmap :: (a -> b) -> (b -> a) -> f a -> f b
-

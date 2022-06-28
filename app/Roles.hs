@@ -1,7 +1,6 @@
 -- # pragmas
 {-# LANGUAGE RoleAnnotations #-}
-{-# LANGUAGE TypeFamilies    #-}
-
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 module Roles where
@@ -9,8 +8,8 @@ module Roles where
 -- # imports
 import Data.Coerce (Coercible, coerce)
 import Data.Foldable (toList)
-import qualified Data.Map as M
-import Data.Monoid (Sum (..), Product (..))
+import Data.Map qualified as M
+import Data.Monoid (Product (..), Sum (..))
 
 {-
 
@@ -34,9 +33,8 @@ slowSum = getSum . mconcat . fmap Sum
 fastSum :: [Int] -> Int
 fastSum = getSum . mconcat . coerce
 
-newtype Reverse a = Reverse
-  { getReverse :: a
-  } deriving (Eq, Show)
+newtype Reverse a = Reverse { getReverse :: a }
+  deriving (Eq, Show)
 
 -- # OrdReverse
 instance Ord a => Ord (Reverse a) where
@@ -44,15 +42,9 @@ instance Ord a => Ord (Reverse a) where
 
 type family IntToBool a where
   IntToBool Int = Bool
-  IntToBool a   = a
+  IntToBool a = a
 
-
-
-data BST v
-  = Empty
-  | Branch (BST v) v (BST v)
+data BST v = Empty | Branch (BST v) v (BST v)
 
 -- # role
 type role BST nominal
-
-

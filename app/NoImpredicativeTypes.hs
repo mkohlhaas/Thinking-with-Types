@@ -13,5 +13,3 @@ ex :: (forall x. x -> x) -> Int
 ex = const 0
 
 -}
-
-
