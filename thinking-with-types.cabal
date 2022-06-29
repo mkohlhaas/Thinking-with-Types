@@ -12,6 +12,7 @@ library
         Database
         Defunc
         DeriveAnyClass
+        Exercises
         FCTF
         GADTs
         Generic.Monoid

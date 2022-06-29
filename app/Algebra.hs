@@ -121,10 +121,7 @@ checkWinner (TicTacToe {..}) = join $
         [topRight, midCenter, botLeft]
         ]
     let [one, two, three] = line
-    guard $
-      isJust one
-        && two == one
-        && three == one
+    guard $ isJust one && two == one && three == one
     pure one
 
 emptyBoard :: TicTacToe (Maybe Bool)
