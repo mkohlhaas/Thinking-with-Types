@@ -2,6 +2,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeFamilyDependencies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module Singletons where
 
@@ -22,7 +23,7 @@ class SingKind k where
 class SingI (a :: k) where
   sing :: Sing a
 
-withSomeSing :: SomeSing k -> (forall (a :: k). Sing a -> r) -> r
+withSomeSing :: SomeSing k -> (∀ (a :: k). Sing a -> r) -> r
 withSomeSing (SomeSing s) f = f s
 
 -- # SingBool

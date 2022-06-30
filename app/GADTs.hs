@@ -2,6 +2,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 {-# OPTIONS -Wall #-}
 
@@ -109,9 +110,9 @@ type family AllEq (ts :: [Type]) :: Constraint where
   AllEq (t ': ts) = (Eq t, AllEq ts) -- ! 2
 
 -- foldHList
---     :: forall c ts m
+--     :: ∀ c ts m
 --      . (All c ts, Monoid m)
---     => (forall t. c t => t -> m)
+--     => (∀ t. c t => t -> m)
 --     -> HList ts
 --     -> m
 -- foldHList _ HNil = mempty

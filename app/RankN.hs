@@ -1,4 +1,5 @@
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module RankN where
 
@@ -9,21 +10,21 @@ import Data.Maybe (fromMaybe)
 import Data.Proxy (Proxy (Proxy))
 import Data.Typeable (Typeable, cast, typeRep)
 
-applyToFive :: (forall a. a -> a) -> Int
+applyToFive :: (∀ a. a -> a) -> Int
 applyToFive f = f 5
 
 {-
 
--- # forall1
-forall a. a -> a
+-- # ∀1
+∀ a. a -> a
 
--- # forall2
-forall a. (a -> a)
+-- # ∀2
+∀ a. (a -> a)
 
--- # forall3
-forall r. ((forall a. (a -> r)) -> r)
+-- # ∀3
+∀ r. ((∀ a. (a -> r)) -> r)
 
-id :: forall a. a -> a
+id :: ∀ a. a -> a
 id a = a
 
 -- # brokenApply
@@ -31,23 +32,23 @@ applyToFive :: (a -> a) -> Int
 applyToFive f = f 5
 
 -- # explicitBrokenApply
-applyToFive :: forall a. (a -> a) -> Int
+applyToFive :: ∀ a. (a -> a) -> Int
 applyToFive f = f 5
 
 -}
 
-toCont :: a -> (forall r. (a -> r) -> r)
+toCont :: a -> (∀ r. (a -> r) -> r)
 toCont a callback = callback a
 
 isMempty :: (Monoid a, Eq a) => a -> Bool
 isMempty a = a == mempty
 
-fromCont :: (forall r. (a -> r) -> r) -> a
+fromCont :: (∀ r. (a -> r) -> r) -> a
 fromCont f =
   let callback = id
    in f callback
 
-newtype Codensity a = Codensity { runCodensity :: forall r. (a -> r) -> r }
+newtype Codensity a = Codensity { runCodensity :: ∀ r. (a -> r) -> r }
 
 newtype Cont r a = Cont { unCont :: (a -> r) -> r }
 
@@ -65,7 +66,7 @@ instance Monad Codensity where
   return = pure
   Codensity m >>= f = Codensity $ \c -> m $ \a -> runCodensity (f a) c
 
-newtype CodensityT m a = CodensityT { unCodensityT :: forall r. (a -> m r) -> m r }
+newtype CodensityT m a = CodensityT { unCodensityT :: ∀ r. (a -> m r) -> m r }
 
 instance Functor (CodensityT m) where
   fmap f (CodensityT c) = CodensityT $ \c' -> c (c' . f)
@@ -105,21 +106,21 @@ releaseStringCodensity = fromCont $
     os <- Codensity withOS
     pure $ os ++ "-" ++ show version ++ "-" ++ show date
 
-data Any = forall a. Any a
+data Any = ∀ a. Any a
 
-elimAny :: (forall a. a -> r) -> Any -> r
+elimAny :: (∀ a. a -> r) -> Any -> r
 elimAny f (Any a) = f a
 
 data Has (c :: Type -> Constraint) where
   Has :: c t => t -> Has c
 
-elimHas :: (forall a. c a => a -> r) -> Has c -> r
+elimHas :: (∀ a. c a => a -> r) -> Has c -> r
 elimHas f (Has a) = f a
 
 data HasShow where
   HasShow :: Show t => t -> HasShow
 
-elimHasShow :: (forall a. Show a => a -> r) -> HasShow -> r
+elimHasShow :: (∀ a. Show a => a -> r) -> HasShow -> r
 elimHasShow f (HasShow a) = f a
 
 -- # hasShowShow
@@ -137,13 +138,13 @@ instance Show HasShow where
 data Dynamic where
   Dynamic :: Typeable t => t -> Dynamic
 
-elimDynamic :: (forall a. Typeable a => a -> r) -> Dynamic -> r
+elimDynamic :: (∀ a. Typeable a => a -> r) -> Dynamic -> r
 elimDynamic f (Dynamic a) = f a
 
 fromDynamic :: Typeable a => Dynamic -> Maybe a
 fromDynamic = elimDynamic cast
 
-liftD2 :: forall a b r. ( Typeable a, Typeable b, Typeable r) => Dynamic -> Dynamic -> (a -> b -> r) -> Maybe Dynamic
+liftD2 :: ∀ a b r. ( Typeable a, Typeable b, Typeable r) => Dynamic -> Dynamic -> (a -> b -> r) -> Maybe Dynamic
 liftD2 d1 d2 f = fmap Dynamic . f <$> fromDynamic @a d1 <*> fromDynamic @b d2
 
 pyPlus :: Dynamic -> Dynamic -> Dynamic

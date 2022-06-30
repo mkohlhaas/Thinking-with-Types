@@ -4,6 +4,7 @@
 -- {-# LANGUAGE OverloadedLabels     #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module OpenProduct where
 
@@ -95,7 +96,7 @@ type UpsertElem key t ts =
     =<< Map (Placeholder1Of3 SetIndex '(key, t) ts) -- ! 1
     =<< FindIndex (TyEq key <=< Fst) ts
 
-upsert :: forall key ts t f. FindUpsertElem (UpsertLoc key ts) => Key key -> f t -> OpenProduct f ts -> OpenProduct f (Eval (UpsertElem key t ts))
+upsert :: ∀ key ts t f. FindUpsertElem (UpsertLoc key ts) => Key key -> f t -> OpenProduct f ts -> OpenProduct f (Eval (UpsertElem key t ts))
 upsert _ ft (OpenProduct v) =
   OpenProduct $ case upsertElem @(UpsertLoc key ts) of
     Nothing -> V.cons (Any ft) v
@@ -104,13 +105,13 @@ upsert _ ft (OpenProduct v) =
 type FindElem :: Symbol -> [(Symbol, k)] -> Nat
 type FindElem key ts = Eval (FromMaybe Stuck =<< FindIndex (TyEq key <=< Fst) ts)
 
-findElem :: forall key ts. KnownNat (FindElem key ts) => Int
+findElem :: ∀ key ts. KnownNat (FindElem key ts) => Int
 findElem = fromIntegral . natVal $ Proxy @(FindElem key ts)
 
 type LookupType :: k -> [(k, t)] -> Exp t
 type LookupType key ts = FromMaybe Stuck =<< Lookup key ts
 
-get :: forall key ts f. KnownNat (FindElem key ts) => Key key -> OpenProduct f ts -> f (Eval (LookupType key ts)) -- ! 1
+get :: ∀ key ts f. KnownNat (FindElem key ts) => Key key -> OpenProduct f ts -> f (Eval (LookupType key ts)) -- ! 1
 get _ (OpenProduct v) = unAny $ V.unsafeIndex v $ findElem @key @ts
   where
     unAny (Any a) = unsafeCoerce a -- ! 2
@@ -162,26 +163,26 @@ type family FriendlyFindElem2 funcName key ts where
           =<< FindIndex (TyEq key <=< Fst) ts
       )
 
-friendlyUpdate :: forall key ts t f. (KnownNat (FriendlyFindElem "friendlyUpdate" key ts), KnownNat (FindElem key ts)) => Key key -> f t -> OpenProduct f ts -> OpenProduct f (Eval (UpdateElem key t ts))
+friendlyUpdate :: ∀ key ts t f. (KnownNat (FriendlyFindElem "friendlyUpdate" key ts), KnownNat (FindElem key ts)) => Key key -> f t -> OpenProduct f ts -> OpenProduct f (Eval (UpdateElem key t ts))
 friendlyUpdate _ ft (OpenProduct v) =
   OpenProduct $ v V.// [(findElem @key @ts, Any ft)]
 
-update :: forall key ts t f. KnownNat (FindElem key ts) => Key key -> f t -> OpenProduct f ts -> OpenProduct f (Eval (UpdateElem key t ts))
+update :: ∀ key ts t f. KnownNat (FindElem key ts) => Key key -> f t -> OpenProduct f ts -> OpenProduct f (Eval (UpdateElem key t ts))
 update _ ft (OpenProduct v) = OpenProduct $ v V.// [(findElem @key @ts, Any ft)]
 
 type DeleteElem key = Filter (Not <=< TyEq key <=< Fst)
 
-delete :: forall key ts f. KnownNat (FindElem key ts) => Key key -> OpenProduct f ts -> OpenProduct f (Eval (DeleteElem key ts))
+delete :: ∀ key ts f. KnownNat (FindElem key ts) => Key key -> OpenProduct f ts -> OpenProduct f (Eval (DeleteElem key ts))
 delete _ (OpenProduct v) =
   let (a, b) = V.splitAt (findElem @key @ts) v
    in OpenProduct $ a V.++ V.tail b
 
-friendlyDelete :: forall key ts f. (KnownNat (FriendlyFindElem "friendlyDelete" key ts), KnownNat (FindElem key ts)) => Key key -> OpenProduct f ts -> OpenProduct f (Eval (DeleteElem key ts))
+friendlyDelete :: ∀ key ts f. (KnownNat (FriendlyFindElem "friendlyDelete" key ts), KnownNat (FindElem key ts)) => Key key -> OpenProduct f ts -> OpenProduct f (Eval (DeleteElem key ts))
 friendlyDelete _ (OpenProduct v) =
   let (a, b) = V.splitAt (findElem @key @ts) v
    in OpenProduct $ a V.++ V.tail b
 
-peel :: forall f name t ts. OpenProduct f ('(name, t) ': ts) -> (f t, OpenProduct f ts)
+peel :: ∀ f name t ts. OpenProduct f ('(name, t) ': ts) -> (f t, OpenProduct f ts)
 peel z@(OpenProduct v) = (get (Key @name) z, OpenProduct $ V.tail v)
 
 instance Eq (OpenProduct f '[]) where

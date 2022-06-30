@@ -2,6 +2,7 @@
 {-# LANGUAGE GADTs #-}
 -- {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeFamilyDependencies #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module AdHocSingletons where
 
@@ -25,7 +26,7 @@ fromSBool :: SBool b -> Bool
 fromSBool STrue = True
 fromSBool SFalse = False
 
-withSomeSBool :: SomeSBool -> (forall (b :: Bool). SBool b -> r) -> r
+withSomeSBool :: SomeSBool -> (∀ (b :: Bool). SBool b -> r) -> r
 withSomeSBool (SomeSBool s) f = f s
 
 type family EnableLogging (b :: Bool) :: Type -> Type where

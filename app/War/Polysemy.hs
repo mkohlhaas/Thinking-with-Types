@@ -1,3 +1,5 @@
+{-# LANGUAGE UnicodeSyntax #-}
+
 module War.Polysemy where
 
 import Control.Monad (ap)
@@ -26,7 +28,7 @@ instance Functor f => Monad (Free f) where
 
 foldFree
     :: Monad m
-    => (forall x. f x -> m x)
+    => (∀ x. f x -> m x)
     -> Free f a
     -> m a
 foldFree _   (Pure a) = pure a
@@ -66,7 +68,7 @@ interpretConsole (PutLine str a) = do
   pure a
 
 newtype CodensityT m a = CodensityT
-  { unCodensityT :: forall r. (a -> m r) -> m r
+  { unCodensityT :: ∀ r. (a -> m r) -> m r
   }
 
 instance Functor (CodensityT m) where

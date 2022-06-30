@@ -1,3 +1,5 @@
+{-# LANGUAGE UnicodeSyntax #-}
+
 module ST where
 
 import Data.IORef
@@ -31,13 +33,13 @@ modifySTRef ref f = do
   a <- readSTRef ref
   writeSTRef ref $ f a
 
-runST :: (forall s. ST s a) -> {- -- ! 1 -} a
+runST :: (∀ s. ST s a) -> {- -- ! 1 -} a
 runST x = unsafeRunST x
 
 {-
 
 -- # runSTType
-runST :: (forall s. ST s a) -> a
+runST :: (∀ s. ST s a) -> a
 
 -}
 
@@ -51,7 +53,7 @@ safeExample = do
 
 -- # signature
 runST
-    :: (forall s. ST s (STRef s Bool)) -- ! 1
+    :: (∀ s. ST s (STRef s Bool)) -- ! 1
     -> STRef s Bool  -- ! 2
 
 -}

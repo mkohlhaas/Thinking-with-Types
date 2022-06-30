@@ -5,6 +5,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module Sigma where
 
@@ -21,13 +22,13 @@ import Prelude.Singletons (FalseSym0, FoldlSym0, NilSym0, PEq (type (==)), PShow
 data Sigma (f :: k -> Type) where
   Sigma :: Sing a -> f a -> Sigma f
 
-withSigma :: (forall (a :: k). Sing a -> f a -> r) -> Sigma f -> r
+withSigma :: (∀ (a :: k). Sing a -> f a -> r) -> Sigma f -> r
 withSigma c (Sigma s f) = c s f
 
 toSigma :: SingI a => f a -> Sigma f
 toSigma fa = Sigma sing fa
 
-fromSigma :: forall k (a :: k) (f :: k -> Type). ( SingI a, SDecide k) => Sigma f -> Maybe (f a)
+fromSigma :: ∀ k (a :: k) (f :: k -> Type). ( SingI a, SDecide k) => Sigma f -> Maybe (f a)
 fromSigma (Sigma s f) =
   case s %~ sing @a of
     Proved Refl -> Just f -- ! 1
@@ -71,10 +72,10 @@ showLogs = fmap $
 jsonLogs :: [LogMsg 'JsonMsg]
 jsonLogs = catSigmas logs
 
-catSigmas :: forall k (a :: k) f. (SingI a, SDecide k) => [Sigma f] -> [f a]
+catSigmas :: ∀ k (a :: k) f. (SingI a, SDecide k) => [Sigma f] -> [f a]
 catSigmas = mapMaybe fromSigma
 
-type Dict1 :: forall k. (Type -> Constraint) -> (k -> Type) -> Constraint
+type Dict1 :: ∀ k. (Type -> Constraint) -> (k -> Type) -> Constraint
 class Dict1 c f where
   dict1 :: Sing a -> Dict (c (f a))
 

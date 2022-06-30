@@ -4,6 +4,7 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module QuantifiedConstraints where
 
@@ -12,7 +13,7 @@ import Data.Coerce
 import Data.Functor.Identity
 import Data.Maybe
 
-class (forall m. Monad m => Monad (t m)) => MonadTrans t where
+class (∀ m. Monad m => Monad (t m)) => MonadTrans t where
   lift :: Monad m => m a -> t m a
 
 newtype MaybeT m a = MaybeT
@@ -49,7 +50,7 @@ instance (Eq (HKD f a)) => EqQ f a
 
 deriving instance (Eq (HKD f Int), Eq (HKD f Bool), Eq (HKD f x)) => Eq (Foo f x)
 
--- instance (Eq x, forall a. Eq a => EqQ f a) => Eq (Foo f x) where
+-- instance (Eq x, ∀ a. Eq a => EqQ f a) => Eq (Foo f x) where
 --   Foo a b c == Foo x y z =
 --     with @(EqQ f Int)  $
 --     with @(EqQ f Bool) $

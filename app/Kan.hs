@@ -1,3 +1,4 @@
+{-# LANGUAGE UnicodeSyntax #-}
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 
 module Kan where
@@ -9,7 +10,7 @@ import Control.Monad.Codensity
 {-
 
 newtype Yoneda f a = Yoneda
-  { runYoneda :: forall b. (a -> b) -> f b
+  { runYoneda :: ∀ b. (a -> b) -> f b
   }
 
 -- # FunctorYoneda

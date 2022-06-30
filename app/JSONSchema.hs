@@ -3,6 +3,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 -- {-# OPTIONS_GHC -Wall #-}
 
@@ -30,15 +31,15 @@ type GSchema :: (Type -> Type) -> Constraint
 class GSchema a where
   gschema :: Writer [Text] Value
 
-makePropertyObj :: forall name. (KnownSymbol name) => Value -> Value
+makePropertyObj :: ∀ name. (KnownSymbol name) => Value -> Value
 makePropertyObj = undefined -- object
 -- [ pack (symbolVal $ Proxy @name) .= v
 -- ]
 
-makeTypeObj :: forall a. KnownSymbol (ToJSONType a) => Value
+makeTypeObj :: ∀ a. KnownSymbol (ToJSONType a) => Value
 makeTypeObj = object ["type" .= String (pack . symbolVal $ Proxy @(ToJSONType a))]
 
-emitRequired :: forall nm. KnownSymbol nm => Writer [Text] ()
+emitRequired :: ∀ nm. KnownSymbol nm => Writer [Text] ()
 emitRequired = tell . pure . pack . symbolVal $ Proxy @nm
 
 type ToJSONType :: Type -> Symbol
@@ -115,7 +116,7 @@ instance (TypeError ('Err.Text "JSON Schema does not support sum types")) => GSc
   gschema = error "JSON Schema does not support sum types"
   {-# INLINE gschema #-}
 
-schema :: forall a. (GSchema (Rep a), Generic a) => Value
+schema :: ∀ a. (GSchema (Rep a), Generic a) => Value
 schema =
   let (v, reqs) = runWriter $ gschema @(Rep a)
    in mergeObjects v $ object ["required" .= Array (fromList $ String <$> reqs)]

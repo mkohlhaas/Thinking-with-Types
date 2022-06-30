@@ -1,5 +1,6 @@
 {-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE NumDecimals #-}
+{-# LANGUAGE UnicodeSyntax #-}
 {-# OPTIONS_GHC -fno-warn-type-defaults #-}
 
 module ImpredicativeTypes where
@@ -8,10 +9,10 @@ import Control.Concurrent (MVar, forkIO, newEmptyMVar, putMVar, takeMVar, thread
 import Control.Exception (bracket_)
 import Control.Monad (void)
 
-makeSerial :: IO (forall a. IO a -> IO a)
+makeSerial :: IO (∀ a. IO a -> IO a)
 makeSerial = fmap locking newEmptyMVar
 
-locking :: MVar () -> (forall a. IO a -> IO a)
+locking :: MVar () -> (∀ a. IO a -> IO a)
 locking lock = bracket_ (putMVar lock ()) (takeMVar lock)
 
 dump :: (IO () -> IO ()) -> IO ()
@@ -36,7 +37,7 @@ interleaved = do
 
   threadDelay 1e5
 
-yo :: (forall a. [a] -> [a]) -> Int
+yo :: (∀ a. [a] -> [a]) -> Int
 yo _ = 0
 
 ($$) :: (a -> b) -> a -> b
