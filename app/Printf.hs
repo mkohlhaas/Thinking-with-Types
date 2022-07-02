@@ -1,11 +1,9 @@
--- # pragmas
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module Printf where
 
--- # imports
 import Data.Kind (Constraint, Type)
 import Data.Proxy (Proxy (..))
 import GHC.TypeLits (KnownSymbol, Nat, Symbol, symbolVal)

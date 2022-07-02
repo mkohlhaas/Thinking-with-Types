@@ -1,4 +1,3 @@
--- # pragmas
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
@@ -17,7 +16,6 @@
 
 module Database where
 
--- # imports
 import Data.IntMap.Strict (IntMap)
 import Data.IntMap.Strict qualified as IM
 import Data.Kind (Type)
@@ -121,7 +119,8 @@ instance
   GLookup (a :*: b) (a' :*: b')
   where
   gLookup idx (ca :*: cb) =
-    (:*:) <$> gLookup idx ca
+    (:*:)
+      <$> gLookup idx ca
       <*> gLookup idx cb
 
 -- # GLookupM1

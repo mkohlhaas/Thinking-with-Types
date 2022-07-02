@@ -1,5 +1,5 @@
-{-# LANGUAGE DataKinds            #-}
-{-# LANGUAGE GADTs                #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE UndecidableInstances #-}
 
 module War.Ecstasy where
@@ -27,8 +27,6 @@ import           GHC.OverloadedLabels
 import           GHC.TypeLits
 import           Witherable
 
-
-newtype Entity w = Entity (HKD w Maybe)
   deriving (Generic)
 
 instance Eq (HKD w Maybe) => Eq (Entity w) where
@@ -37,27 +35,19 @@ instance Eq (HKD w Maybe) => Eq (Entity w) where
 instance Ord (HKD w Maybe) => Ord (Entity w) where
   Entity a `compare` Entity b = a `compare` b
 
-
 data System w = System
-  { systemData  :: HKD w IntMap
   , systemAlive :: IntSet
   , systemUniq  :: Id
   } deriving (Generic)
 
-
 newSystem :: Monoid (HKD w IntMap) => System w
 newSystem = System mempty mempty $ Id 0
-
-
 numEntities :: System w -> Int
 numEntities = idToInt . systemUniq
 
-
-data Query w a where
   RefineMap  :: (a -> Maybe b) -> Query w a -> Query w b
   Const      :: a -> Query w a
   Ap         :: Query w (a -> b) -> Query w a -> Query w b
-  With       :: Component w a -> Query w a
   Without    :: Component w a -> Query w ()
   Together   :: Query w a -> Query w b -> Query w (a, b)
   Alt        :: Query w a -> Query w b -> Query w (Either a b)
@@ -105,13 +95,11 @@ instance Applicative (Query w) where
 instance Filterable (Query w) where
   mapMaybe = refineMap
 
-
 data Component w a = Component
   { compName   :: String
   , compEntity :: Lens' w a
   , compSystem :: Lens' (System w) (IntMap a)
   }
-
 instance Eq (Component w a) where
   (==) = (==) `on` compName
 
@@ -129,29 +117,23 @@ instance
       (field' @nm)
       (field' @"systemData" . field' @nm)
 
-
 data Setter w where
   Set       :: Component w a -> a -> Setter w
   Unchanged :: Setter w
   Unset     :: Component w a -> Setter w
   Delete    :: Setter w
   Both      :: Setter w -> Setter w -> Setter w
-
-
 newtype Id = Id
   { idToInt :: Int
   } deriving (Show, Eq, Generic, Ord)
 
-
 findRelevant :: System w -> Query w a -> IntSet
 findRelevant sys (RefineMap _ q)
   = findRelevant sys q
-findRelevant sys (Const _)
   = mkAllIntSet sys
 findRelevant sys (Ap qf qa)
   = IS.intersection (findRelevant sys qf)
                     (findRelevant sys qa)
-findRelevant sys (With c)
   = IM.keysSet
   $ view (compSystem c) sys
 findRelevant sys (Without c)
@@ -177,7 +159,6 @@ findRelevant sys (Alt a b)
 findRelevant _ Fail
   = mempty
 
-
 mkAllIntSet :: System w -> IntSet
 mkAllIntSet
   = IS.fromList
@@ -186,9 +167,7 @@ mkAllIntSet
   . idToInt
   . systemUniq
 
-
 constantValue :: Query w a -> Maybe a
-constantValue (RefineMap f q)
   = f =<< constantValue q
 constantValue (Const c) = Just c
 constantValue (Ap qf qa)
@@ -197,7 +176,6 @@ constantValue (With _) = Nothing
 constantValue (Without _) = Nothing
 constantValue (Together q1 q2)
   = (,) <$> constantValue q1
-        <*> constantValue q2
 -- ...
 
 constantValue UniqId = Nothing
@@ -207,7 +185,6 @@ constantValue (Try q) = Just <$> constantValue q
 constantValue (Subquery _) = Nothing
 constantValue Everything = Nothing
 constantValue Fail = Nothing
-
 
 createEntity
     :: (FunctorB (HKD w), Monoid (HKD w IntMap))
@@ -220,17 +197,14 @@ createEntity (Entity e) w =
       e' = bmap (maybe mempty (IM.singleton ix)) e
    in ( Id ix
       , w & field' @"systemData" <>~ e'
-          & field' @"systemAlive" %~ IS.insert ix
           & field' @"systemUniq" .~ ix'
       )
 
 delEntity :: FunctorB (HKD w) => Id -> System w -> System w
 delEntity ix = setEntity ix Delete
 
-
 getEntity :: FunctorB (HKD w) => Id -> System w -> Entity w
 getEntity ix w = Entity $ bmap (IM.lookup $ idToInt ix) $ systemData w
-
 
 queryEntity :: (FunctorB (HKD w), Generic w) => Id -> Query w a -> System w -> Maybe a
 queryEntity ix (Const a) s
@@ -241,11 +215,9 @@ queryEntity ix (RefineMap f q) s
   = f =<< queryEntity ix q s
 queryEntity ix (With c) s
   = s ^. compAtIx c ix
-queryEntity ix (Without c) s
   = maybe (Just ()) (const Nothing) $ s ^. compAtIx c ix
 queryEntity ix (Together c1 c2) s
   = (,)
-      <$> queryEntity ix c1 s
       <*> queryEntity ix c2 s
 queryEntity ix (Ap c1 c2) s
   = queryEntity ix c1 s <*> queryEntity ix c2 s

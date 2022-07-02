@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE UnicodeSyntax #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 {-# OPTIONS_GHC -fno-warn-missing-methods #-}
 
@@ -13,8 +12,8 @@ instance
   ( TypeError
       ( 'Text "Attempting to interpret a number as a function "
           ':$$: 'Text "in the type `"
-          ':<>: 'ShowType (a -> b)
-          ':<>: 'Text "'"
+            ':<>: 'ShowType (a -> b)
+            ':<>: 'Text "'"
           ':$$: 'Text "Did you forget to specify the function you wanted?"
       )
   ) =>
@@ -30,7 +29,7 @@ broken f a = apply
 
 -}
 
-working :: ∀ a b. (a -> b) -> a -> b
+working :: forall a b. (a -> b) -> a -> b
 working f a = apply
   where
     apply :: b

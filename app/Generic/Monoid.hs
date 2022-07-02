@@ -97,10 +97,10 @@ instance (Generic a, GSemigroup (Rep a)) => Semigroup (Generically2 a) where
   Generically2 a <> Generically2 b = Generically2 $ genericMappend a b
 
 -- # GenericallyMonoid
-instance ( Generic a, GMonoid (Rep a), Semigroup (Generically a)) => Monoid (Generically a) where
+instance (Generic a, GMonoid (Rep a), Semigroup (Generically a)) => Monoid (Generically a) where
   mempty = coerce $ genericMempty @a
 
-data Foo = Foo { f_total :: Sum Int, f_valid :: All }
+data Foo = Foo {f_total :: Sum Int, f_valid :: All}
   deriving (Show, Generic)
   deriving (Semigroup) via Generically Foo
 

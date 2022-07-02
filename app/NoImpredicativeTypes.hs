@@ -1,8 +1,6 @@
-{-# LANGUAGE UnicodeSyntax #-}
-
 module NoImpredicativeTypes where
 
-ex :: (∀ x. x -> x) -> Int
+ex :: (forall x. x -> x) -> Int
 ex _ = 0
 
 {-

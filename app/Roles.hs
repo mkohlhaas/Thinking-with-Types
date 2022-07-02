@@ -1,11 +1,9 @@
--- # pragmas
 {-# LANGUAGE RoleAnnotations #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 module Roles where
 
--- # imports
 import Data.Coerce (Coercible, coerce)
 import Data.Foldable (toList)
 import Data.Map qualified as M
@@ -33,7 +31,7 @@ slowSum = getSum . mconcat . fmap Sum
 fastSum :: [Int] -> Int
 fastSum = getSum . mconcat . coerce
 
-newtype Reverse a = Reverse { getReverse :: a }
+newtype Reverse a = Reverse {getReverse :: a}
   deriving (Eq, Show)
 
 -- # OrdReverse

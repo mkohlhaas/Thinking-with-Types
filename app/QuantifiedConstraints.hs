@@ -4,7 +4,6 @@
 {-# LANGUAGE QuantifiedConstraints #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE UnicodeSyntax #-}
 
 module QuantifiedConstraints where
 
@@ -13,7 +12,7 @@ import Data.Coerce
 import Data.Functor.Identity
 import Data.Maybe
 
-class (∀ m. Monad m => Monad (t m)) => MonadTrans t where
+class (forall m. Monad m => Monad (t m)) => MonadTrans t where
   lift :: Monad m => m a -> t m a
 
 newtype MaybeT m a = MaybeT

@@ -30,4 +30,3 @@ data ProofStateT x' x e s m a
       (e -> m e)
   | Axiom x
   deriving stock (Generic, Functor)
-

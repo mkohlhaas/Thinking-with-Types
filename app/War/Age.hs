@@ -1,10 +1,10 @@
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE GADTs     #-}
+{-# LANGUAGE GADTs #-}
 
 module War.Age where
 
-import Data.Kind
 import Data.Coerce (coerce)
+import Data.Kind
 
 data Age
   = Current
@@ -28,14 +28,14 @@ newtype PositionMap from to = PositionMap
   }
 
 class MapAge a where
-  mapAgeFrom
-      :: PositionMap from to
-      -> Tracked to a
-      -> Tracked from a
-  mapAgeTo
-      :: PositionMap from to
-      -> Tracked from a
-      -> Tracked to a
+  mapAgeFrom ::
+    PositionMap from to ->
+    Tracked to a ->
+    Tracked from a
+  mapAgeTo ::
+    PositionMap from to ->
+    Tracked from a ->
+    Tracked to a
 
 -- # MapAgeRange
 instance MapAge Range where
@@ -43,19 +43,18 @@ instance MapAge Range where
   mapAgeTo = coerce toCurrentRange
 
 data TrackedStale a where
-  TrackedStale
-      :: Tracked ('Stale s) a
-      -> PositionMap ('Stale s) 'Current
-      -> TrackedStale a
+  TrackedStale ::
+    Tracked ('Stale s) a ->
+    PositionMap ('Stale s) 'Current ->
+    TrackedStale a
 
 fromCurrentRange :: PositionMapping -> Range -> Range
-toCurrentRange   :: PositionMapping -> Range -> Range
-
+toCurrentRange :: PositionMapping -> Range -> Range
 
 data PositionMapping
 
 data Range
 
 fromCurrentRange = undefined
-toCurrentRange = undefined
 
+toCurrentRange = undefined

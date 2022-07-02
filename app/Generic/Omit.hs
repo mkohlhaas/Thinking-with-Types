@@ -63,7 +63,8 @@ instance-- ! 3
 
   {-# OVERLAPPABLE #-}
   GEqOmit o {- -- ! 4 -} (S1 ('MetaSel ('Just name) _1 _2 _3) f) =>
-  GEqOmit (other_name ': o) {- -- ! 1 -} (S1 ('MetaSel ('Just name) _1 _2 _3) f) {- -- ! 2 -} where
+  GEqOmit (other_name ': o {- -- ! 1 -}) (S1 ('MetaSel ('Just name) _1 _2 _3) f {- -- ! 2 -})
+  where
   geqomit _ = geqomit (Proxy @o) -- ! 5
 
 -- # GEqOmitS1Nothing
@@ -96,7 +97,7 @@ type Omit :: [Symbol] -> Type -> Type
 newtype Omit o a = Omit a
 
 -- # EqOmit
-instance ( Generic a, GEqOmit o (Rep a)) => Eq (Omit o a) where
+instance (Generic a, GEqOmit o (Rep a)) => Eq (Omit o a) where
   Omit a == Omit b = geqomit (Proxy @o) (from a) (from b)
 
 -- data Person = Person

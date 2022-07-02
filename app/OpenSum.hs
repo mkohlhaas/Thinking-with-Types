@@ -1,14 +1,11 @@
--- # pragmas
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE UnicodeSyntax #-}
 
 module OpenSum where
 
--- # imports
 import Data.Kind (Type)
 import Data.Proxy (Proxy (Proxy))
 import Fcf (Eval, Exp, FindIndex, FromMaybe, Stuck, TyEq, type (=<<))
@@ -16,18 +13,18 @@ import GHC.TypeLits (ErrorMessage (ShowType, Text, (:$$:), (:<>:)), KnownNat, Na
 import Unsafe.Coerce (unsafeCoerce)
 
 type OpenSum :: (k -> Type) -> [k] -> Type
-data OpenSum f ts where -- ! 1
-  UnsafeOpenSum :: {- -- ! 2 -} Int -> f t -> {- -- ! 3 -} OpenSum f ts {- -- ! 4 -}
+data OpenSum f ts where
+  UnsafeOpenSum :: Int -> f t -> OpenSum f ts
 
 type FindElem :: k -> [k] -> Exp Nat
-type FindElem key ts = FromMaybe Stuck {- -- ! 1 -} =<< FindIndex (TyEq key) ts
+type FindElem key ts = FromMaybe Stuck =<< FindIndex (TyEq key) ts
 
 type Member t ts = KnownNat (Eval (FindElem t ts))
 
-findElem :: ∀ t ts. Member t ts => Int
+findElem :: forall t ts. Member t ts => Int
 findElem = fromIntegral . natVal $ Proxy @(Eval (FindElem t ts))
 
-inj :: ∀ f t ts. Member t ts => f t -> OpenSum f ts
+inj :: forall f t ts. Member t ts => f t -> OpenSum f ts
 inj = UnsafeOpenSum (findElem @t @ts)
 
 type FriendlyFindElem :: (k -> Type) -> k -> [k] -> Exp Nat
@@ -40,18 +37,18 @@ type family FriendlyFindElem f t ts where
               ':<>: 'Text "'."
               ':$$: 'Text "But the OpenSum can only contain one of:"
               ':$$: 'Text "  "
-              ':<>: 'ShowType ts
+                ':<>: 'ShowType ts
           )
       )
       =<< FindIndex (TyEq t) ts
 
-prj :: ∀ f t ts. Member t ts => OpenSum f ts -> Maybe (f t)
+prj :: forall f t ts. Member t ts => OpenSum f ts -> Maybe (f t)
 prj (UnsafeOpenSum i f) =
   if i == findElem @t @ts -- ! 1
     then Just $ unsafeCoerce f -- ! 2
     else Nothing
 
-friendlyPrj :: ∀ f t ts. ( KnownNat (Eval (FriendlyFindElem f t ts)), Member t ts) => OpenSum f ts -> Maybe (f t)
+friendlyPrj :: forall f t ts. (KnownNat (Eval (FriendlyFindElem f t ts)), Member t ts) => OpenSum f ts -> Maybe (f t)
 friendlyPrj = prj
 
 weaken :: OpenSum f ts -> OpenSum f (t ': ts)
@@ -61,7 +58,7 @@ decompose :: OpenSum f (t ': ts) -> Either (f t) (OpenSum f ts)
 decompose (UnsafeOpenSum 0 t) = Left $ unsafeCoerce t
 decompose (UnsafeOpenSum n t) = Right $ UnsafeOpenSum (n - 1) t
 
-match :: ∀ f ts b. (∀ t. f t -> b) -> {- -- ! 1 -} OpenSum f ts -> b
+match :: forall f ts b. (forall t. f t -> b {- -- ! 1 -}) -> OpenSum f ts -> b
 match fn (UnsafeOpenSum _ t) = fn t
 
 instance Eq (OpenSum f '[]) where

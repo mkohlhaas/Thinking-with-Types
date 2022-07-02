@@ -105,7 +105,7 @@ data TicTacToe a = TicTacToe
     botRight :: a
   }
 
-newtype TicTacToe2 a = TicTacToe2 { board :: Three -> Three -> a }
+newtype TicTacToe2 a = TicTacToe2 {board :: Three -> Three -> a}
 
 checkWinner :: TicTacToe (Maybe Bool) -> Maybe Bool
 checkWinner (TicTacToe {..}) = join $

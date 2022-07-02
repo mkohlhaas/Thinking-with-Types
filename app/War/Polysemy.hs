@@ -1,5 +1,3 @@
-{-# LANGUAGE UnicodeSyntax #-}
-
 module War.Polysemy where
 
 import Control.Monad (ap)
@@ -11,7 +9,7 @@ data Free f a
 data Console a
   = GetLine (String -> a)
   | PutLine String a
-  deriving Functor
+  deriving (Functor)
 
 instance Functor f => Functor (Free f) where
   fmap f (Pure a) = Pure (f a)
@@ -26,12 +24,12 @@ instance Functor f => Monad (Free f) where
   Pure a >>= f = f a
   Bind b >>= f = Bind (fmap (>>= f) b)
 
-foldFree
-    :: Monad m
-    => (∀ x. f x -> m x)
-    -> Free f a
-    -> m a
-foldFree _   (Pure a) = pure a
+foldFree ::
+  Monad m =>
+  (forall x. f x -> m x) ->
+  Free f a ->
+  m a
+foldFree _ (Pure a) = pure a
 foldFree run (Bind b) = run b >>= foldFree run
 
 sayHello :: Free Console ()
@@ -52,12 +50,13 @@ sayHelloImproved = do
 
 sayHello2 :: Free Console ()
 sayHello2 =
-  Bind $ PutLine "What is your name?" $
-  Bind $ GetLine $ \name ->
-  Bind $ PutLine ("Hello, " <> name) $
-  Pure ()
-
-
+  Bind $
+    PutLine "What is your name?" $
+      Bind $
+        GetLine $ \name ->
+          Bind $
+            PutLine ("Hello, " <> name) $
+              Pure ()
 
 interpretConsole :: Console a -> IO a
 interpretConsole (GetLine f) = do
@@ -68,7 +67,7 @@ interpretConsole (PutLine str a) = do
   pure a
 
 newtype CodensityT m a = CodensityT
-  { unCodensityT :: ∀ r. (a -> m r) -> m r
+  { unCodensityT :: forall r. (a -> m r) -> m r
   }
 
 instance Functor (CodensityT m) where
@@ -86,4 +85,3 @@ instance Monad (CodensityT m) where
 
 liftCodensity :: Functor f => Free f a -> CodensityT (Free f) a
 liftCodensity t = CodensityT $ \k -> t >>= k
-

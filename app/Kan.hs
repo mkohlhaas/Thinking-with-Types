@@ -1,11 +1,10 @@
-{-# LANGUAGE UnicodeSyntax #-}
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 
 module Kan where
 
-import Data.Functor.Yoneda
-import Data.Functor.Day.Curried
 import Control.Monad.Codensity
+import Data.Functor.Day.Curried
+import Data.Functor.Yoneda
 
 {-
 

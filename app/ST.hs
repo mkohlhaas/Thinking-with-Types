@@ -1,11 +1,9 @@
-{-# LANGUAGE UnicodeSyntax #-}
-
 module ST where
 
 import Data.IORef
 import System.IO.Unsafe (unsafePerformIO)
 
-newtype ST s a = ST {- -- ! 1 -} { unsafeRunST :: a }
+newtype ST s a = ST {unsafeRunST :: a}
 
 instance Functor (ST s) where
   fmap f (ST a) = seq a . ST $ f a
@@ -17,9 +15,9 @@ instance Applicative (ST s) where
 instance Monad (ST s) where
   ST a >>= f = seq a $ f a
 
-newtype STRef s a = STRef {- -- ! 1 -} { unSTRef :: IORef a }
+newtype STRef s a = STRef {unSTRef :: IORef a}
 
-newSTRef :: a -> ST s (STRef s a) -- ! 1
+newSTRef :: a -> ST s (STRef s a)
 newSTRef = pure . STRef . unsafePerformIO . newIORef
 
 readSTRef :: STRef s a -> ST s a
@@ -33,7 +31,7 @@ modifySTRef ref f = do
   a <- readSTRef ref
   writeSTRef ref $ f a
 
-runST :: (∀ s. ST s a) -> {- -- ! 1 -} a
+runST :: (forall s. ST s a) -> a
 runST x = unsafeRunST x
 
 {-
