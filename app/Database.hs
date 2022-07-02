@@ -1,5 +1,5 @@
-{-# LANGUAGE ConstraintKinds, DataKinds, DeriveGeneric, EmptyCase, FlexibleContexts, FlexibleInstances, UnicodeSyntax #-}
-{-# LANGUAGE MultiParamTypeClasses, PolyKinds, StandaloneDeriving, TypeFamilies, TypeOperators, UndecidableInstances, UndecidableSuperClasses #-}
+{-# LANGUAGE ConstraintKinds, DataKinds, DeriveGeneric, EmptyCase, FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, PolyKinds, StandaloneDeriving, TypeFamilies,
+             TypeOperators, UndecidableInstances, UndecidableSuperClasses, UnicodeSyntax #-}
 {-# OPTIONS_GHC -Wall #-}
 
 -- {-# LANGUAGE KindSignatures #-}

@@ -1,5 +1,4 @@
-{-# LANGUAGE DataKinds, UnicodeSyntax #-}
-{-# LANGUAGE DerivingVia, UndecidableInstances #-}
+{-# LANGUAGE DataKinds, DerivingVia, UndecidableInstances, UnicodeSyntax #-}
 
 -- {-# LANGUAGE DerivingStrategies #-}
 

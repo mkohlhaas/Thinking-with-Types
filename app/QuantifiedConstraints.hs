@@ -1,5 +1,4 @@
-{-# LANGUAGE AllowAmbiguousTypes, UnicodeSyntax #-}
-{-# LANGUAGE DerivingVia, QuantifiedConstraints, TypeFamilies, UndecidableInstances #-}
+{-# LANGUAGE AllowAmbiguousTypes, DerivingVia, QuantifiedConstraints, TypeFamilies, UndecidableInstances, UnicodeSyntax #-}
 
 -- {-# LANGUAGE DerivingStrategies    #-}
 

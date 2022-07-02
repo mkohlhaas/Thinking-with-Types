@@ -1,5 +1,4 @@
-{-# LANGUAGE AllowAmbiguousTypes, DataKinds, GADTs, UnicodeSyntax #-}
-{-# LANGUAGE TypeFamilies, UndecidableInstances #-}
+{-# LANGUAGE AllowAmbiguousTypes, DataKinds, GADTs, TypeFamilies, UndecidableInstances, UnicodeSyntax #-}
 
 -- {-# LANGUAGE OverloadedLabels     #-}
 

@@ -1,5 +1,4 @@
-{-# LANGUAGE DataKinds, UnicodeSyntax #-}
-{-# LANGUAGE TypeFamilyDependencies, UndecidableInstances #-}
+{-# LANGUAGE DataKinds, TypeFamilyDependencies, UndecidableInstances, UnicodeSyntax #-}
 
 -- {-# LANGUAGE TypeFamilies #-}
 
