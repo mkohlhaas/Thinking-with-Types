@@ -1,9 +1,7 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE AllowAmbiguousTypes, UnicodeSyntax #-}
+{-# LANGUAGE DerivingVia, QuantifiedConstraints, TypeFamilies, UndecidableInstances #-}
+
 -- {-# LANGUAGE DerivingStrategies    #-}
-{-# LANGUAGE DerivingVia #-}
-{-# LANGUAGE QuantifiedConstraints #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
 
 module QuantifiedConstraints where
 
@@ -12,25 +10,25 @@ import Data.Coerce
 import Data.Functor.Identity
 import Data.Maybe
 
-class (forall m. Monad m => Monad (t m)) => MonadTrans t where
-  lift :: Monad m => m a -> t m a
+class (∀ m. Monad m ⇒ Monad (t m)) => MonadTrans t where
+  lift :: Monad m ⇒ m a → t m a
 
 newtype MaybeT m a = MaybeT
   { runMaybeT :: m (Maybe a)
   }
   deriving (Functor)
 
-instance Applicative m => Applicative (MaybeT m) where
+instance Applicative m ⇒ Applicative (MaybeT m) where
   pure = MaybeT . pure . pure
   liftA2 f (MaybeT a) (MaybeT b) = coerce $ liftA2 (liftA2 f) a b
 
-instance Monad m => Monad (MaybeT m) where
+instance Monad m ⇒ Monad (MaybeT m) where
   MaybeT m >>= f = MaybeT $ maybe (pure Nothing) (runMaybeT . f) =<< m
 
 instance MonadTrans MaybeT where
   lift = MaybeT . fmap pure
 
-getHead :: MonadTrans t => [a] -> t Maybe a
+getHead ∷ MonadTrans t ⇒ [a] → t Maybe a
 getHead as = lift $ listToMaybe as
 
 type family HKD f a where
@@ -45,9 +43,9 @@ data Foo f x = Foo
 
 class (Eq (HKD f a)) => EqQ f a
 
-instance (Eq (HKD f a)) => EqQ f a
+instance (Eq (HKD f a)) ⇒ EqQ f a
 
-deriving instance (Eq (HKD f Int), Eq (HKD f Bool), Eq (HKD f x)) => Eq (Foo f x)
+deriving instance (Eq (HKD f Int), Eq (HKD f Bool), Eq (HKD f x)) ⇒ Eq (Foo f x)
 
 -- instance (Eq x, ∀ a. Eq a => EqQ f a) => Eq (Foo f x) where
 --   Foo a b c == Foo x y z =
@@ -56,8 +54,8 @@ deriving instance (Eq (HKD f Int), Eq (HKD f Bool), Eq (HKD f x)) => Eq (Foo f x
 --     with @(EqQ f x)    $
 --       a == x && b == y && c == z
 
-yo :: Eq a => Foo Identity a -> Foo Identity a -> Bool
+yo ∷ Eq a ⇒ Foo Identity a → Foo Identity a → Bool
 yo = (==)
 
-with :: (c => t) -> (c => t)
+with ∷ (c ⇒ t) → (c ⇒ t)
 with x = x

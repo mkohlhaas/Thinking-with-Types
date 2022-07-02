@@ -1,28 +1,18 @@
-{-# LANGUAGE ConstraintKinds #-}
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE EmptyCase #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
--- {-# LANGUAGE KindSignatures #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE PolyKinds #-}
-{-# LANGUAGE StandaloneDeriving #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE UndecidableSuperClasses #-}
+{-# LANGUAGE ConstraintKinds, DataKinds, DeriveGeneric, EmptyCase, FlexibleContexts, FlexibleInstances, UnicodeSyntax #-}
+{-# LANGUAGE MultiParamTypeClasses, PolyKinds, StandaloneDeriving, TypeFamilies, TypeOperators, UndecidableInstances, UndecidableSuperClasses #-}
 {-# OPTIONS_GHC -Wall #-}
+
+-- {-# LANGUAGE KindSignatures #-}
 
 module Database where
 
 import Data.IntMap.Strict (IntMap)
 import Data.IntMap.Strict qualified as IM
-import Data.Kind (Type)
-import Data.Sequence (Seq)
-import Data.Sequence qualified as S
-import GHC.Generics (Generic (..), K1 (K1), M1 (M1), U1 (..), V1, type (:*:) (..))
-import Prelude hiding (lookup)
+import Data.Kind          (Type)
+import Data.Sequence      (Seq)
+import Data.Sequence      qualified as S
+import GHC.Generics       (Generic (..), K1 (K1), M1 (M1), U1 (..), V1, type (:*:) (..))
+import Prelude            hiding (lookup)
 
 {-
 
@@ -41,8 +31,8 @@ data PersonTable = PersonTable
 -}
 
 data PersonPattern (r :: Representation) = PersonPattern
-  { name :: Column r 'NotNull String,
-    age :: Column r 'NotNull Int,
+  { name    :: Column r 'NotNull String,
+    age     :: Column r 'NotNull Int,
     address :: Column r 'Null String
   }
   deriving (Generic)
@@ -87,7 +77,7 @@ type family
   Column 'UpdateRep 'Null t = Maybe (Update t) -- ! 1
 
 class GLookup table row where
-  gLookup :: Int -> table x -> Maybe (row x)
+  gLookup :: Int → table x → Maybe (row x)
 
 -- # GLookupK1IntMap
 -- 'TableRep ~> 'RowRep for 'Null
@@ -115,7 +105,7 @@ instance GLookup V1 V1 where
 
 -- # GLookupTimes
 instance
-  (GLookup a a', GLookup b b') =>
+  (GLookup a a', GLookup b b') ⇒
   GLookup (a :*: b) (a' :*: b')
   where
   gLookup idx (ca :*: cb) =
@@ -125,14 +115,14 @@ instance
 
 -- # GLookupM1
 instance
-  (GLookup a b) =>
+  (GLookup a b) ⇒
   GLookup (M1 _1 _2 a) (M1 _1 _2 b)
   where
   gLookup idx (M1 c) =
     M1 <$> gLookup idx c
 
 class GInsert row table where
-  gInsert :: Int -> row x -> table x -> table x
+  gInsert :: Int → row x → table x → table x
 
 -- # GInsertK1IntMap
 -- 'RowRep ~> 'TableRep for 'Null
@@ -157,25 +147,25 @@ instance GInsert U1 U1 where
 instance GInsert V1 V1 where
   gInsert _ v _ = absurdV1 v
 
-absurdV1 :: V1 x -> a
+absurdV1 ∷ V1 x → a
 absurdV1 v = case v of {}
 
 instance
-  (GInsert a a', GInsert b b') =>
+  (GInsert a a', GInsert b b') ⇒
   GInsert (a :*: b) (a' :*: b')
   where
   gInsert idx (a :*: b) (ca :*: cb) =
     gInsert idx a ca :*: gInsert idx b cb
 
 instance
-  GInsert a b =>
+  GInsert a b ⇒
   GInsert (M1 _1 _2 a) (M1 _1 _2 b)
   where
   gInsert idx (M1 a) (M1 c) =
     M1 $ gInsert idx a c
 
 class GUpdate update table where
-  gUpdate :: Int -> update x -> table x -> table x
+  gUpdate :: Int → update x → table x → table x
 
 -- # GUpdateK1Maybe
 instance
@@ -206,11 +196,11 @@ instance GUpdate U1 U1 where
 instance GUpdate V1 V1 where
   gUpdate _ v _ = absurdV1 v
 
-instance (GUpdate a a', GUpdate b b') => GUpdate (a :*: b) (a' :*: b') where
+instance (GUpdate a a', GUpdate b b') ⇒ GUpdate (a :*: b) (a' :*: b') where
   gUpdate idx (a :*: b) (ca :*: cb) =
     gUpdate idx a ca :*: gUpdate idx b cb
 
-instance (GUpdate a b) => GUpdate (M1 _1 _2 a) (M1 _1 _2 b) where
+instance (GUpdate a b) ⇒ GUpdate (M1 _1 _2 a) (M1 _1 _2 b) where
   gUpdate idx (M1 a) (M1 c) =
     M1 $ gUpdate idx a c
 
@@ -225,19 +215,19 @@ instance GEmpty (K1 _1 (IntMap a)) where
 instance GEmpty (K1 _1 (Seq a)) where
   gEmpty = K1 S.empty
 
-instance (GEmpty a, GEmpty b) => GEmpty (a :*: b) where
+instance (GEmpty a, GEmpty b) ⇒ GEmpty (a :*: b) where
   gEmpty = gEmpty :*: gEmpty
 
 instance GEmpty U1 where
   gEmpty = U1
 
-instance GEmpty a => GEmpty (M1 _1 _2 a) where
+instance GEmpty a ⇒ GEmpty (M1 _1 _2 a) where
   gEmpty = M1 gEmpty
 
-empty ::
+empty ∷
   ( Generic (pat 'TableRep),
     GEmpty (Rep (pat 'TableRep))
-  ) =>
+  ) ⇒
   pat 'TableRep
 empty = to gEmpty
 
@@ -254,29 +244,29 @@ instance
   ( Generic (pat a),
     Generic (pat b),
     c (Rep (pat a)) (Rep (pat b))
-  ) =>
+  ) ⇒
   HKDImpl c pat a b
 
-update ::
-  HKDImpl GUpdate pat 'UpdateRep 'TableRep =>
-  Int ->
-  pat 'UpdateRep ->
-  pat 'TableRep ->
+update ∷
+  HKDImpl GUpdate pat 'UpdateRep 'TableRep ⇒
+  Int →
+  pat 'UpdateRep →
+  pat 'TableRep →
   pat 'TableRep
 update idx u t = to $ gUpdate idx (from u) (from t)
 
-insert ::
-  HKDImpl GInsert pat 'RowRep 'TableRep =>
-  Int ->
-  pat 'RowRep ->
-  pat 'TableRep ->
+insert ∷
+  HKDImpl GInsert pat 'RowRep 'TableRep ⇒
+  Int →
+  pat 'RowRep →
+  pat 'TableRep →
   pat 'TableRep
 insert idx r t = to $ gInsert idx (from r) (from t)
 
-lookup ::
-  HKDImpl GLookup pat 'TableRep 'RowRep =>
-  Int ->
-  pat 'TableRep ->
+lookup ∷
+  HKDImpl GLookup pat 'TableRep 'RowRep ⇒
+  Int →
+  pat 'TableRep →
   Maybe (pat 'RowRep)
 lookup idx t = to <$> gLookup idx (from t)
 

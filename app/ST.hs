@@ -1,3 +1,5 @@
+{-# LANGUAGE UnicodeSyntax #-}
+
 module ST where
 
 import Data.IORef
@@ -17,21 +19,21 @@ instance Monad (ST s) where
 
 newtype STRef s a = STRef {unSTRef :: IORef a}
 
-newSTRef :: a -> ST s (STRef s a)
+newSTRef ∷ a → ST s (STRef s a)
 newSTRef = pure . STRef . unsafePerformIO . newIORef
 
-readSTRef :: STRef s a -> ST s a
+readSTRef ∷ STRef s a → ST s a
 readSTRef = pure . unsafePerformIO . readIORef . unSTRef
 
-writeSTRef :: STRef s a -> a -> ST s ()
+writeSTRef ∷ STRef s a → a → ST s ()
 writeSTRef ref = pure . unsafePerformIO . writeIORef (unSTRef ref)
 
-modifySTRef :: STRef s a -> (a -> a) -> ST s ()
+modifySTRef ∷ STRef s a → (a → a) → ST s ()
 modifySTRef ref f = do
   a <- readSTRef ref
   writeSTRef ref $ f a
 
-runST :: (forall s. ST s a) -> a
+runST ∷ (∀ s. ST s a) → a
 runST x = unsafeRunST x
 
 {-
@@ -41,7 +43,7 @@ runST :: (∀ s. ST s a) -> a
 
 -}
 
-safeExample :: ST s String
+safeExample ∷ ST s String
 safeExample = do
   ref <- newSTRef "hello"
   modifySTRef ref (++ " world")

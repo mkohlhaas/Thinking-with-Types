@@ -1,14 +1,13 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DataKinds, GADTs, TypeFamilyDependencies, UnicodeSyntax #-}
+
 -- {-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeFamilyDependencies #-}
 
 module AdHocSingletons where
 
 import Control.Monad.Trans.Writer (WriterT (runWriterT), tell)
-import Data.Constraint (Dict (..))
-import Data.Foldable (for_)
-import Data.Kind (Type)
+import Data.Constraint            (Dict (..))
+import Data.Foldable              (for_)
+import Data.Kind                  (Type)
 
 data SomeSBool where
   SomeSBool :: SBool b -> SomeSBool
@@ -17,18 +16,18 @@ data SBool (b :: Bool) where
   STrue :: SBool 'True
   SFalse :: SBool 'False
 
-toSBool :: Bool -> SomeSBool
-toSBool True = SomeSBool STrue
+toSBool ∷ Bool → SomeSBool
+toSBool True  = SomeSBool STrue
 toSBool False = SomeSBool SFalse
 
-fromSBool :: SBool b -> Bool
-fromSBool STrue = True
+fromSBool ∷ SBool b → Bool
+fromSBool STrue  = True
 fromSBool SFalse = False
 
-withSomeSBool :: SomeSBool -> (forall (b :: Bool). SBool b -> r) -> r
+withSomeSBool ∷ SomeSBool → (∀ (b :: Bool). SBool b → r) → r
 withSomeSBool (SomeSBool s) f = f s
 
-type family EnableLogging (b :: Bool) :: Type -> Type where
+type family EnableLogging (b :: Bool) :: Type → Type where
   EnableLogging 'True = WriterT [String] IO
   EnableLogging 'False = IO
 
@@ -39,11 +38,10 @@ class
   where
   type
     LoggingMonad b =
-      (r :: Type -> Type) | r -> b -- ! 1
-      -- ! 2
+      (r :: Type → Type) | r -> b
 
-  logMsg :: String -> LoggingMonad b ()
-  runLogging :: LoggingMonad b a -> IO a
+  logMsg :: String → LoggingMonad b ()
+  runLogging :: LoggingMonad b a → IO a
 
 -- # MonadLoggingTrue
 instance MonadLogging 'True where
@@ -60,16 +58,16 @@ instance MonadLogging 'False where
   logMsg _ = pure ()
   runLogging = id
 
-dict :: (c 'True {- -- ! 1 -}, c 'False) => SBool b {- -- ! 2 -} -> Dict (c b)
-dict STrue = Dict -- ! 3
+dict ∷ (c 'True {- -- ! 1 -}, c 'False) ⇒ SBool b {- -- ! 2 -} → Dict (c b)
+dict STrue  = Dict -- ! 3
 dict SFalse = Dict
 
-program :: MonadLogging b => LoggingMonad b ()
+program ∷ MonadLogging b ⇒ LoggingMonad b ()
 program = do
   logMsg "hello world"
   pure ()
 
-main :: Bool -> IO ()
+main ∷ Bool → IO ()
 main bool = do
   withSomeSBool (toSBool bool) $ \(sb :: SBool b) ->
     case dict @MonadLogging sb of

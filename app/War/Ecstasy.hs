@@ -1,6 +1,4 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DataKinds, GADTs, UndecidableInstances, UnicodeSyntax #-}
 
 module War.Ecstasy where
 

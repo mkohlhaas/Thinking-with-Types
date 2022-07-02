@@ -1,5 +1,4 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DataKinds, UndecidableInstances, UnicodeSyntax #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 {-# OPTIONS_GHC -fno-warn-missing-methods #-}
 
@@ -12,12 +11,12 @@ instance
   ( TypeError
       ( 'Text "Attempting to interpret a number as a function "
           ':$$: 'Text "in the type `"
-            ':<>: 'ShowType (a -> b)
+            ':<>: 'ShowType (a → b)
             ':<>: 'Text "'"
           ':$$: 'Text "Did you forget to specify the function you wanted?"
       )
-  ) =>
-  Num (a -> b)
+  ) ⇒
+  Num (a → b)
 
 {-
 
@@ -29,10 +28,10 @@ broken f a = apply
 
 -}
 
-working :: forall a b. (a -> b) -> a -> b
+working ∷ ∀ a b. (a → b) → a → b
 working f a = apply
   where
-    apply :: b
+    apply ∷ b
     apply = f a
 
 {-

@@ -1,19 +1,19 @@
-{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DataKinds, UnicodeSyntax #-}
+{-# LANGUAGE DerivingVia, UndecidableInstances #-}
+
 -- {-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE DerivingVia #-}
-{-# LANGUAGE UndecidableInstances #-}
 
 module Generic.Omit where
 
-import Data.Kind (Constraint, Type)
-import Data.Proxy (Proxy (..))
+import Data.Kind    (Constraint, Type)
+import Data.Proxy   (Proxy (..))
 import GHC.Generics (C1, D1, Generic (Rep, from), K1 (K1), M1 (M1), Meta (MetaSel), S1, U1 (..), V1, type (:*:) (..), type (:+:) (..))
 import GHC.TypeLits (Symbol)
 
 data Weird r = Weird
-  { name :: String,
-    value :: Int,
-    result :: Int -> r
+  { name   :: String,
+    value  :: Int,
+    result :: Int → r
   }
   deriving (Generic)
   deriving (Eq) via (Omit '["result"] (Weird r))
@@ -38,20 +38,20 @@ data Meta
 
 -}
 
-type GEqOmit :: [Symbol] -> (k -> Type) -> Constraint
+type GEqOmit :: [Symbol] → (k → Type) → Constraint
 class GEqOmit o f where
-  geqomit :: Proxy o -> f x -> f x -> Bool
+  geqomit :: Proxy o → f x → f x → Bool
 
 -- # GEqOmitC1
-instance GEqOmit o f => GEqOmit o (C1 _1 f) where
+instance GEqOmit o f ⇒ GEqOmit o (C1 _1 f) where
   geqomit o (M1 a) (M1 b) = geqomit o a b
 
 -- # GEqOmitD1
-instance GEqOmit o f => GEqOmit o (D1 _1 f) where
+instance GEqOmit o f ⇒ GEqOmit o (D1 _1 f) where
   geqomit o (M1 a) (M1 b) = geqomit o a b
 
 -- # GEqOmitS1NotOmitted
-instance GEqOmit '[] f => GEqOmit '[] (S1 ('MetaSel ('Just name) _1 _2 _3) f) where
+instance GEqOmit '[] f ⇒ GEqOmit '[] (S1 ('MetaSel ('Just name) _1 _2 _3) f) where
   geqomit o (M1 a) (M1 b) = geqomit o a b
 
 -- # GEqOmitS1Omitted
@@ -62,28 +62,28 @@ instance GEqOmit (name ': o) (S1 ('MetaSel ('Just name) _1 _2 _3) f) where
 instance-- ! 3
 
   {-# OVERLAPPABLE #-}
-  GEqOmit o {- -- ! 4 -} (S1 ('MetaSel ('Just name) _1 _2 _3) f) =>
+  GEqOmit o {- -- ! 4 -} (S1 ('MetaSel ('Just name) _1 _2 _3) f) ⇒
   GEqOmit (other_name ': o {- -- ! 1 -}) (S1 ('MetaSel ('Just name) _1 _2 _3) f {- -- ! 2 -})
   where
   geqomit _ = geqomit (Proxy @o) -- ! 5
 
 -- # GEqOmitS1Nothing
-instance GEqOmit o f => GEqOmit o (S1 ('MetaSel 'Nothing _1 _2 _3) f) where
+instance GEqOmit o f ⇒ GEqOmit o (S1 ('MetaSel 'Nothing _1 _2 _3) f) where
   geqomit o (M1 a) (M1 b) = geqomit o a b
 
 -- # GEqOmitK1
-instance Eq a => GEqOmit o (K1 _1 a) where
+instance Eq a ⇒ GEqOmit o (K1 _1 a) where
   geqomit _ (K1 a) (K1 b) = a == b
 
 -- # GEqOmitProduct
-instance (GEqOmit o f, GEqOmit o g) => GEqOmit o (f :*: g) where
+instance (GEqOmit o f, GEqOmit o g) ⇒ GEqOmit o (f :*: g) where
   geqomit o (a1 :*: a2) (b1 :*: b2) = geqomit o a1 b1 && geqomit o a2 b2
 
 -- # GEqOmitSum
-instance (GEqOmit o f, GEqOmit o g) => GEqOmit o (f :+: g) where
+instance (GEqOmit o f, GEqOmit o g) ⇒ GEqOmit o (f :+: g) where
   geqomit o (L1 a) (L1 b) = geqomit o a b
   geqomit o (R1 a) (R1 b) = geqomit o a b
-  geqomit _ _ _ = False
+  geqomit _ _ _           = False
 
 -- # GEqOmitU1
 instance GEqOmit o U1 where
@@ -93,11 +93,11 @@ instance GEqOmit o U1 where
 instance GEqOmit o V1 where
   geqomit _ _ _ = True
 
-type Omit :: [Symbol] -> Type -> Type
+type Omit :: [Symbol] → Type → Type
 newtype Omit o a = Omit a
 
 -- # EqOmit
-instance (Generic a, GEqOmit o (Rep a)) => Eq (Omit o a) where
+instance (Generic a, GEqOmit o (Rep a)) ⇒ Eq (Omit o a) where
   Omit a == Omit b = geqomit (Proxy @o) (from a) (from b)
 
 -- data Person = Person

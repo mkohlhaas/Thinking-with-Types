@@ -1,7 +1,4 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE DataKinds, GADTs, TypeFamilies, UndecidableInstances, UnicodeSyntax #-}
 
 {-# OPTIONS -Wall #-}
 
@@ -16,12 +13,12 @@ data Expr a where
   Not :: Expr Bool -> Expr Bool
   If :: Expr Bool -> Expr a -> Expr a -> Expr a
 
-evalExpr :: Expr a -> a
-evalExpr (LitInt i) = i
+evalExpr ∷ Expr a → a
+evalExpr (LitInt i)  = i
 evalExpr (LitBool b) = b
-evalExpr (Add x y) = evalExpr x + evalExpr y
-evalExpr (Not x) = not $ evalExpr x
-evalExpr (If b x y) = if evalExpr b then evalExpr x else evalExpr y
+evalExpr (Add x y)   = evalExpr x + evalExpr y
+evalExpr (Not x)     = not $ evalExpr x
+evalExpr (If b x y)  = if evalExpr b then evalExpr x else evalExpr y
 
 data Expr_ a
   = (a ~ Int) => LitInt_ Int
@@ -30,12 +27,12 @@ data Expr_ a
   | (a ~ Bool) => Not_ (Expr_ Bool)
   | If_ (Expr_ Bool) (Expr_ a) (Expr_ a)
 
-evalExpr_ :: Expr_ a -> a
-evalExpr_ (LitInt_ i) = i
+evalExpr_ ∷ Expr_ a → a
+evalExpr_ (LitInt_ i)  = i
 evalExpr_ (LitBool_ b) = b
-evalExpr_ (Add_ x y) = evalExpr_ x + evalExpr_ y
-evalExpr_ (Not_ x) = not $ evalExpr_ x
-evalExpr_ (If_ b x y) = if evalExpr_ b then evalExpr_ x else evalExpr_ y
+evalExpr_ (Add_ x y)   = evalExpr_ x + evalExpr_ y
+evalExpr_ (Not_ x)     = not $ evalExpr_ x
+evalExpr_ (If_ b x y)  = if evalExpr_ b then evalExpr_ x else evalExpr_ y
 
 data HList (ts :: [Type]) where
   HNil :: HList '[]
@@ -43,14 +40,14 @@ data HList (ts :: [Type]) where
 
 infixr 5 :#
 
-hHead :: HList (t ': ts) -> t
+hHead ∷ HList (t ': ts) → t
 hHead (t :# _) = t
 
-showBool :: HList '[a, Bool, b] -> String
+showBool ∷ HList '[a, Bool, b] → String
 showBool (_ :# b :# _ :# HNil) = show b
 
-hLength :: HList ts -> Int
-hLength HNil = 0
+hLength ∷ HList ts → Int
+hLength HNil      = 0
 hLength (_ :# ts) = 1 + hLength ts
 
 {-
@@ -82,21 +79,21 @@ instance (Show t, Show (HList ts)) => Show (HList (t ': ts)) where
 -}
 
 -- # eqHList
-instance All Eq ts => Eq (HList ts) where
-  HNil == HNil = True
+instance All Eq ts ⇒ Eq (HList ts) where
+  HNil == HNil           = True
   (a :# as) == (b :# bs) = a == b && as == bs
 
 -- # ordHList
-instance (All Eq ts, All Ord ts) => Ord (HList ts) where
-  compare HNil HNil = EQ
+instance (All Eq ts, All Ord ts) ⇒ Ord (HList ts) where
+  compare HNil HNil           = EQ
   compare (a :# as) (b :# bs) = compare a b <> compare as bs
 
 -- # showHList
-instance (All Show ts) => Show (HList ts) where
-  show HNil = "HNil"
+instance (All Show ts) ⇒ Show (HList ts) where
+  show HNil      = "HNil"
   show (a :# as) = show a <> " :# " <> show as
 
-type family All (c :: Type -> Constraint) (ts :: [Type]) :: Constraint where
+type family All (c :: Type → Constraint) (ts :: [Type]) :: Constraint where
   All c '[] = ()
   All c (t ': ts) = (c t, All c ts)
 

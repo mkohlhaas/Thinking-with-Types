@@ -1,13 +1,12 @@
-{-# LANGUAGE RoleAnnotations #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE RoleAnnotations, TypeFamilies, UnicodeSyntax #-}
 {-# OPTIONS_GHC -fno-warn-unused-imports #-}
 
 module Roles where
 
-import Data.Coerce (Coercible, coerce)
+import Data.Coerce   (Coercible, coerce)
 import Data.Foldable (toList)
-import Data.Map qualified as M
-import Data.Monoid (Product (..), Sum (..))
+import Data.Map      qualified as M
+import Data.Monoid   (Product (..), Sum (..))
 
 {-
 
@@ -25,17 +24,17 @@ insert :: Ord k => k -> v -> Map k v -> Map k v
 
 -}
 
-slowSum :: [Int] -> Int
+slowSum ∷ [Int] → Int
 slowSum = getSum . mconcat . fmap Sum
 
-fastSum :: [Int] -> Int
+fastSum ∷ [Int] → Int
 fastSum = getSum . mconcat . coerce
 
 newtype Reverse a = Reverse {getReverse :: a}
   deriving (Eq, Show)
 
 -- # OrdReverse
-instance Ord a => Ord (Reverse a) where
+instance Ord a ⇒ Ord (Reverse a) where
   compare (Reverse a) (Reverse b) = compare b a
 
 type family IntToBool a where
