@@ -1,4 +1,7 @@
-{-# LANGUAGE DataKinds, GADTs, UndecidableInstances, UnicodeSyntax #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module War.Ecstasy where
 
@@ -27,48 +30,48 @@ import           Witherable
 
   deriving (Generic)
 
-instance Eq (HKD w Maybe) => Eq (Entity w) where
+instance Eq (HKD w Maybe) ⇒ Eq (Entity w) where
   Entity a == Entity b = a == b
 
-instance Ord (HKD w Maybe) => Ord (Entity w) where
+instance Ord (HKD w Maybe) ⇒ Ord (Entity w) where
   Entity a `compare` Entity b = a `compare` b
 
 data System w = System
-  , systemAlive :: IntSet
-  , systemUniq  :: Id
+  , systemAlive ∷ IntSet
+  , systemUniq  ∷ Id
   } deriving (Generic)
 
-newSystem :: Monoid (HKD w IntMap) => System w
+newSystem ∷ Monoid (HKD w IntMap) ⇒ System w
 newSystem = System mempty mempty $ Id 0
-numEntities :: System w -> Int
+numEntities ∷ System w → Int
 numEntities = idToInt . systemUniq
 
-  RefineMap  :: (a -> Maybe b) -> Query w a -> Query w b
-  Const      :: a -> Query w a
-  Ap         :: Query w (a -> b) -> Query w a -> Query w b
-  Without    :: Component w a -> Query w ()
-  Together   :: Query w a -> Query w b -> Query w (a, b)
-  Alt        :: Query w a -> Query w b -> Query w (Either a b)
-  Try        :: Query w a -> Query w (Maybe a)
-  Fail       :: Query w a
-  UniqId     :: Query w Id
-  Particular :: Id -> Query w ()
-  Subquery   :: Query w a -> Query w [a]
-  Everything :: Query w (Entity w)
+  RefineMap  ∷ (a → Maybe b) → Query w a → Query w b
+  Const      ∷ a → Query w a
+  Ap         ∷ Query w (a → b) → Query w a → Query w b
+  Without    ∷ Component w a → Query w ()
+  Together   ∷ Query w a → Query w b → Query w (a, b)
+  Alt        ∷ Query w a → Query w b → Query w (Either a b)
+  Try        ∷ Query w a → Query w (Maybe a)
+  Fail       ∷ Query w a
+  UniqId     ∷ Query w Id
+  Particular ∷ Id → Query w ()
+  Subquery   ∷ Query w a → Query w [a]
+  Everything ∷ Query w (Entity w)
 
 {-
 
-emap :: IdTarget w m -> QueryT w m (Setter w) -> SystemT w m ()
+emap ∷ IdTarget w m → QueryT w m (Setter w) → SystemT w m ()
 
-efor :: IdTarget w m -> QueryT w m  -> SystemT w m [a]
+efor ∷ IdTarget w m → QueryT w m  → SystemT w m [a]
 
-allIds  :: IdTarget w m
-someIds :: [Id] -> IdTarget w m
-anId    :: Id -> IdTarget w m
-idsWith :: (System w -> a) -> IdTarget w m
+allIds  ∷ IdTarget w m
+someIds ∷ [Id] → IdTarget w m
+anId    ∷ Id → IdTarget w m
+idsWith ∷ (System w → a) → IdTarget w m
 
 newtype QueryT w m a = QueryT
-  { runQueryT' :: ReaderT (Id, System w) (MaybeT m) a
+  { runQueryT' ∷ ReaderT (Id, System w) (MaybeT m) a
   }
   deriving ( Functor
            , Applicative
@@ -76,7 +79,7 @@ newtype QueryT w m a = QueryT
            , Alternative
            )
 
-runQueryT :: Monad m => Id -> QueryT w m a -> SystemT w m (Maybe a)
+runQueryT ∷ Monad m ⇒ Id → QueryT w m a → SystemT w m (Maybe a)
 
 -}
 
@@ -94,9 +97,9 @@ instance Filterable (Query w) where
   mapMaybe = refineMap
 
 data Component w a = Component
-  { compName   :: String
-  , compEntity :: Lens' w a
-  , compSystem :: Lens' (System w) (IntMap a)
+  { compName   ∷ String
+  , compEntity ∷ Lens' w a
+  , compSystem ∷ Lens' (System w) (IntMap a)
   }
 instance Eq (Component w a) where
   (==) = (==) `on` compName
@@ -108,7 +111,7 @@ instance
     ( KnownSymbol nm
     , HasField' nm w a
     , HasField' nm (HKD w IntMap) (IntMap a)
-    ) => IsLabel nm (Component w a) where
+    ) ⇒ IsLabel nm (Component w a) where
   fromLabel =
     Component
       (symbolVal $ Proxy @nm)
@@ -116,16 +119,16 @@ instance
       (field' @"systemData" . field' @nm)
 
 data Setter w where
-  Set       :: Component w a -> a -> Setter w
-  Unchanged :: Setter w
-  Unset     :: Component w a -> Setter w
-  Delete    :: Setter w
-  Both      :: Setter w -> Setter w -> Setter w
+  Set       ∷ Component w a → a → Setter w
+  Unchanged ∷ Setter w
+  Unset     ∷ Component w a → Setter w
+  Delete    ∷ Setter w
+  Both      ∷ Setter w → Setter w → Setter w
 newtype Id = Id
-  { idToInt :: Int
+  { idToInt ∷ Int
   } deriving (Show, Eq, Generic, Ord)
 
-findRelevant :: System w -> Query w a -> IntSet
+findRelevant ∷ System w → Query w a → IntSet
 findRelevant sys (RefineMap _ q)
   = findRelevant sys q
   = mkAllIntSet sys
@@ -157,7 +160,7 @@ findRelevant sys (Alt a b)
 findRelevant _ Fail
   = mempty
 
-mkAllIntSet :: System w -> IntSet
+mkAllIntSet ∷ System w → IntSet
 mkAllIntSet
   = IS.fromList
   . enumFromTo 0
@@ -165,7 +168,7 @@ mkAllIntSet
   . idToInt
   . systemUniq
 
-constantValue :: Query w a -> Maybe a
+constantValue ∷ Query w a → Maybe a
   = f =<< constantValue q
 constantValue (Const c) = Just c
 constantValue (Ap qf qa)
@@ -185,10 +188,10 @@ constantValue Everything = Nothing
 constantValue Fail = Nothing
 
 createEntity
-    :: (FunctorB (HKD w), Monoid (HKD w IntMap))
-    => Entity w
-    -> System w
-    -> (Id, System w)
+    ∷ (FunctorB (HKD w), Monoid (HKD w IntMap))
+    ⇒ Entity w
+    → System w
+    → (Id, System w)
 createEntity (Entity e) w =
   let ix = idToInt $ systemUniq w
       ix' = Id $ ix + 1
@@ -198,13 +201,13 @@ createEntity (Entity e) w =
           & field' @"systemUniq" .~ ix'
       )
 
-delEntity :: FunctorB (HKD w) => Id -> System w -> System w
+delEntity ∷ FunctorB (HKD w) ⇒ Id → System w → System w
 delEntity ix = setEntity ix Delete
 
-getEntity :: FunctorB (HKD w) => Id -> System w -> Entity w
+getEntity ∷ FunctorB (HKD w) ⇒ Id → System w → Entity w
 getEntity ix w = Entity $ bmap (IM.lookup $ idToInt ix) $ systemData w
 
-queryEntity :: (FunctorB (HKD w), Generic w) => Id -> Query w a -> System w -> Maybe a
+queryEntity ∷ (FunctorB (HKD w), Generic w) ⇒ Id → Query w a → System w → Maybe a
 queryEntity ix (Const a) s
   = bool Nothing (Just a) $ isBounded ix s
 queryEntity ix (Subquery q) s
@@ -229,24 +232,24 @@ queryEntity ix Everything s
 queryEntity ix (Try q) s
   = bool Nothing (Just $ queryEntity ix q s) $ isBounded ix s
 queryEntity ix (Alt q1 q2) s = do
-  a <- queryEntity ix (try q1) s
+  a ← queryEntity ix (try q1) s
   case a of
-    Just a' -> pure $ Left a'
-    Nothing -> fmap Right $ queryEntity ix q2 s
+    Just a' → pure $ Left a'
+    Nothing → fmap Right $ queryEntity ix q2 s
 queryEntity _ Fail _ = Nothing
 
-isBounded :: Id -> System w -> Bool
+isBounded ∷ Id → System w → Bool
 isBounded ix s = idToInt ix >= 0 && idToInt ix < idToInt (systemUniq s)
 
 compAtIx
-    :: Functor f
-    => Component w a
-    -> Id
-    -> (Maybe a -> f (Maybe a))
-    -> System w -> f (System w)
+    ∷ Functor f
+    ⇒ Component w a
+    → Id
+    → (Maybe a → f (Maybe a))
+    → System w → f (System w)
 compAtIx c ix = compSystem c . at (idToInt ix)
 
-setEntity :: FunctorB (HKD w) => Id -> Setter w -> System w -> System w
+setEntity ∷ FunctorB (HKD w) ⇒ Id → Setter w → System w → System w
 setEntity _ Unchanged sys = sys
 setEntity ix _ sys | not (isBounded ix sys) = sys
 setEntity ix Delete sys =
@@ -262,69 +265,69 @@ setEntity ix (Set c a) sys =
   sys
     & compAtIx c ix ?~ a
 
-query :: (FunctorB (HKD w), Generic w) => Query w a -> System w -> [a]
+query ∷ (FunctorB (HKD w), Generic w) ⇒ Query w a → System w → [a]
 query (Subquery q) s = [query q s]
 query UniqId s = coerce $ enumFromTo 0 $ numEntities s - 1
 query q s
-  = mapMaybe (\ix -> queryEntity ix q s)
+  = mapMaybe (\ix → queryEntity ix q s)
   . coerce
   . IS.toList
   $ findRelevant s q
 
-update :: (FunctorB (HKD w), Generic w) => Query w a -> (a -> Setter w) -> System w -> System w
+update ∷ (FunctorB (HKD w), Generic w) ⇒ Query w a → (a → Setter w) → System w → System w
 update q f s
   = flip appEndo s
-  . foldMap (\(ix, a) -> Endo $ setEntity ix (f a))
+  . foldMap (\(ix, a) → Endo $ setEntity ix (f a))
   $ query (Together UniqId q) s
 
-particular :: Id -> Query w ()
+particular ∷ Id → Query w ()
 particular = Particular
 
-uniqId :: Query w Id
+uniqId ∷ Query w Id
 uniqId = UniqId
 
-with :: Component w a -> Query w a
+with ∷ Component w a → Query w a
 with = With
 
-fetch :: Component w a -> Query w (Maybe a)
+fetch ∷ Component w a → Query w (Maybe a)
 fetch = try . with
 
-without :: Component w a -> Query w ()
+without ∷ Component w a → Query w ()
 without = Without
 
-refine :: (a -> Bool) -> Query w a -> Query w a
+refine ∷ (a → Bool) → Query w a → Query w a
 refine p = refineMap (bool Nothing . Just <*> p)
 
-refineMap :: (a -> Maybe b) -> Query w a -> Query w b
+refineMap ∷ (a → Maybe b) → Query w a → Query w b
 refineMap = RefineMap
 
-together :: Query w a -> Query w b -> Query w (a, b)
+together ∷ Query w a → Query w b → Query w (a, b)
 together (Const a) (Const b) = Const (a, b)
 together q1 q2 = Together q1 q2
 
-eitherQ :: Query w a -> Query w b -> Query w (Either a b)
+eitherQ ∷ Query w a → Query w b → Query w (Either a b)
 eitherQ = Alt
 
-try :: Query w a -> Query w (Maybe a)
+try ∷ Query w a → Query w (Maybe a)
 try (Const c) = Const (Just c)
 try q = Try q
 
-subquery  :: Query w a -> Query w [a]
+subquery  ∷ Query w a → Query w [a]
 subquery = Subquery
 
-everything :: Query w (Entity w)
+everything ∷ Query w (Entity w)
 everything = Everything
 
-set :: Component w a -> a -> Setter w
+set ∷ Component w a → a → Setter w
 set = Set
 
-unset :: Component w a -> Setter w
+unset ∷ Component w a → Setter w
 unset = Unset
 
-unchanged :: Setter w
+unchanged ∷ Setter w
 unchanged = Unchanged
 
-both :: Setter w -> Setter w  -> Setter w
+both ∷ Setter w → Setter w  → Setter w
 both Delete _ = Delete
 both _ Delete = Delete
 both Unchanged a = a
@@ -343,7 +346,7 @@ both (Set c _) s@(Set c' _)
   = s
 both s1 s2 = Both s1 s2
 
-delete :: Setter w
+delete ∷ Setter w
 delete = Delete
 
 -}

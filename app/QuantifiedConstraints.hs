@@ -1,6 +1,14 @@
-{-# LANGUAGE AllowAmbiguousTypes, DerivingVia, QuantifiedConstraints, TypeFamilies, UndecidableInstances, UnicodeSyntax #-}
-
--- {-# LANGUAGE DerivingStrategies    #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE QuantifiedConstraints #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module QuantifiedConstraints where
 
@@ -9,11 +17,11 @@ import Data.Coerce
 import Data.Functor.Identity
 import Data.Maybe
 
-class (∀ m. Monad m ⇒ Monad (t m)) => MonadTrans t where
-  lift :: Monad m ⇒ m a → t m a
+class (∀ m. Monad m ⇒ Monad (t m)) ⇒ MonadTrans t where
+  lift ∷ Monad m ⇒ m a → t m a
 
 newtype MaybeT m a = MaybeT
-  { runMaybeT :: m (Maybe a)
+  { runMaybeT ∷ m (Maybe a)
   }
   deriving (Functor)
 
@@ -35,18 +43,18 @@ type family HKD f a where
   HKD f a = f a
 
 data Foo f x = Foo
-  { zoo :: HKD f Int,
-    zum :: HKD f Bool,
-    zap :: HKD f x
+  { zoo ∷ HKD f Int,
+    zum ∷ HKD f Bool,
+    zap ∷ HKD f x
   }
 
-class (Eq (HKD f a)) => EqQ f a
+class (Eq (HKD f a)) ⇒ EqQ f a
 
 instance (Eq (HKD f a)) ⇒ EqQ f a
 
 deriving instance (Eq (HKD f Int), Eq (HKD f Bool), Eq (HKD f x)) ⇒ Eq (Foo f x)
 
--- instance (Eq x, ∀ a. Eq a => EqQ f a) => Eq (Foo f x) where
+-- instance (Eq x, ∀ a. Eq a ⇒ EqQ f a) ⇒ Eq (Foo f x) where
 --   Foo a b c == Foo x y z =
 --     with @(EqQ f Int)  $
 --     with @(EqQ f Bool) $

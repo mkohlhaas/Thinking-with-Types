@@ -1,25 +1,37 @@
-{-# LANGUAGE AllowAmbiguousTypes, DataKinds, OverloadedStrings, TypeFamilies, UndecidableInstances, UnicodeSyntax #-}
-
--- {-# OPTIONS_GHC -Wall #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module JSONSchema where
 
 import Control.Monad.Writer (MonadWriter (tell), Writer, runWriter)
-import Data.Aeson           (Value (..), object, (.=))
-import Data.Kind            (Constraint, Type)
-import Data.Text            (Text, pack)
-import Data.Typeable        (Proxy (Proxy))
-import Data.Vector          (fromList)
-import GHC.Generics         (C, D, D1, Generic (Rep), K1, M1, Meta (MetaData, MetaSel), S, type (:*:), type (:+:))
-import GHC.TypeLits         (KnownSymbol, Symbol, TypeError, symbolVal)
-import GHC.TypeLits         qualified as Err
+import Data.Aeson (Value (..), object, (.=))
+import Data.Kind (Constraint, Type)
+import Data.Text (Text, pack)
+import Data.Typeable (Proxy (Proxy))
+import Data.Vector (fromList)
+import GHC.Generics (C, D, D1, Generic (Rep), K1, M1, Meta (MetaData, MetaSel), S, type (:*:), type (:+:))
+import GHC.TypeLits (KnownSymbol, Symbol, TypeError, symbolVal)
+import GHC.TypeLits qualified as Err
 
-data Person = Person { name :: String, age :: Int, phone :: Maybe String, permissions :: [Bool] }
+data Person = Person {name ∷ String, age ∷ Int, phone ∷ Maybe String, permissions ∷ [Bool]}
   deriving (Generic)
 
-type GSchema :: (Type → Type) → Constraint
+type GSchema ∷ (Type → Type) → Constraint
 class GSchema a where
-  gschema :: Writer [Text] Value
+  gschema ∷ Writer [Text] Value
 
 makePropertyObj ∷ ∀ name. (KnownSymbol name) ⇒ Value → Value
 makePropertyObj = undefined -- object
@@ -32,7 +44,7 @@ makeTypeObj = object ["type" .= String (pack . symbolVal $ Proxy @(ToJSONType a)
 emitRequired ∷ ∀ nm. KnownSymbol nm ⇒ Writer [Text] ()
 emitRequired = tell . pure . pack . symbolVal $ Proxy @nm
 
-type ToJSONType :: Type → Symbol
+type ToJSONType ∷ Type → Symbol
 type family ToJSONType t where
   ToJSONType Int = "integer"
   ToJSONType Integer = "integer"
@@ -45,7 +57,7 @@ type family ToJSONType t where
 
 type TypeName t = RepName (Rep t)
 
-type RepName :: (Type → Type) → Symbol
+type RepName ∷ (Type → Type) → Symbol
 type family RepName x where
   RepName (D1 ('MetaData nm _ _ _) _) = nm
 
@@ -83,7 +95,7 @@ instance (KnownSymbol nm, KnownSymbol (ToJSONType a)) ⇒ GSchema (M1 S ('MetaSe
 
 mergeObjects ∷ Value → Value → Value
 mergeObjects (Object a) (Object b) = Object $ a <> b
-mergeObjects _ _                   = error "unsafe use of mergeObjects"
+mergeObjects _ _ = error "unsafe use of mergeObjects"
 
 -- # gschemaTimes
 instance (GSchema f, GSchema g) ⇒ GSchema (f :*: g) where
@@ -98,7 +110,7 @@ instance GSchema a ⇒ GSchema (M1 C _1 a) where
 -- # gschemaM1D
 instance (GSchema a, KnownSymbol nm) ⇒ GSchema (M1 D ('MetaData nm _1 _2 _3) a) where
   gschema = do
-    sch <- gschema @a
+    sch ← gschema @a
     pure $ object ["title" .= (String . pack . symbolVal $ Proxy @nm), "type" .= String "object", "properties" .= sch]
   {-# INLINE gschema #-}
 

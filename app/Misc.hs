@@ -1,4 +1,10 @@
-{-# LANGUAGE DataKinds, UndecidableInstances, UnicodeSyntax #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 {-# OPTIONS_GHC -Wno-orphans #-}
 {-# OPTIONS_GHC -fno-warn-missing-methods #-}
 
@@ -20,10 +26,10 @@ instance
 
 {-
 
-broken :: (a -> b) -> a -> b
+broken ∷ (a → b) → a → b
 broken f a = apply
   where
-    apply :: b
+    apply ∷ b
     apply = f a
 
 -}
@@ -37,17 +43,17 @@ working f a = apply
 {-
 
 -- # brokenWhy
-broken :: (a -> b) -> a -> b
+broken ∷ (a → b) → a → b
 broken f a = apply
   where
-    apply :: c
+    apply ∷ c
     apply = f a
 
 -}
 
 -- # Refl
 data a :~: b where
-  Refl :: a :~: a
+  Refl ∷ a :~: a
 
 data Proxy a = Proxy
 

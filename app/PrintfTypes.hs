@@ -1,35 +1,42 @@
-{-# LANGUAGE AllowAmbiguousTypes, DataKinds, TypeFamilies, UndecidableInstances, UnicodeSyntax #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module PrintfTypes where
 
-import Data.Kind    (Constraint, Type)
+import Data.Kind (Constraint, Type)
 import GHC.TypeLits (Symbol)
 
-data (a :: k1) :<< (b :: k2)
+data (a ∷ k1) :<< (b ∷ k2)
 
 infixr 5 :<<
 
-type HasPrintf :: k → Constraint
+type HasPrintf ∷ k → Constraint
 class HasPrintf a where -- ! 1
-  type Printf a :: Type -- ! 2
+  type Printf a ∷ Type -- ! 2
 
 -- # baseInstance
-instance HasPrintf (text :: Symbol) where
+instance HasPrintf (text ∷ Symbol) where
   type Printf text = String
 
 -- # textInstance
-instance HasPrintf a ⇒ HasPrintf ((text :: Symbol) :<< a) where
+instance HasPrintf a ⇒ HasPrintf ((text ∷ Symbol) :<< a) where
   type Printf (text :<< a) = Printf a
 
 -- # paramInstance
-instance HasPrintf a ⇒ HasPrintf ((param :: Type) :<< a) where
+instance HasPrintf a ⇒ HasPrintf ((param ∷ Type) :<< a) where
   type Printf (param :<< a) = param → Printf a
 
 type family AlwaysUnit a where
   AlwaysUnit a = ()
 
 class TypeName a where
-  typeName :: AlwaysUnit a → String
+  typeName ∷ AlwaysUnit a → String
 
 -- # TypeNameString
 instance TypeName String where
@@ -41,7 +48,7 @@ instance TypeName Bool where
 
 {-
 
-name :: String
+name ∷ String
 name = typeName ()
 
 -}

@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE UnicodeSyntax #-}
 
 module NoImpredicativeTypes where
@@ -7,11 +8,11 @@ ex _ = 0
 
 {-
 
-const :: a -> b -> a
+const ∷ a → b → a
 const a _ = a
 
 -- # badEx
-ex :: (∀ x. x -> x) -> Int
+ex ∷ (∀ x. x → x) → Int
 ex = const 0
 
 -}

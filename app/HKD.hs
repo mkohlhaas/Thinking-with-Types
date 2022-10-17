@@ -1,22 +1,28 @@
-{-# LANGUAGE TypeFamilies, UnicodeSyntax #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module HKD where
 
 import Data.Functor.Identity (Identity (..))
-import Data.Kind             (Type)
-import GHC.Generics          (Generic (..), K1 (K1), M1 (M1), U1 (..), V1, type (:*:) (..), type (:+:) (..))
+import Data.Kind (Type)
+import GHC.Generics (Generic (..), K1 (K1), M1 (M1), U1 (..), V1, type (:*:) (..), type (:+:) (..))
 
-type family HKD (f :: Type → Type) (a :: Type) :: Type where
+type family HKD (f ∷ Type → Type) (a ∷ Type) ∷ Type where
   HKD Identity a = a
   HKD f a = f a
 
-newtype Foo f = Foo {bar :: HKD f Int}
+newtype Foo f = Foo {bar ∷ HKD f Int}
 
 -- # eqInstFoo
 deriving instance Eq (Foo Identity)
 
 class GFlay f i o where
-  gflay :: i x → f (o x)
+  gflay ∷ i x → f (o x)
 
 -- # gflayK1
 instance Functor f ⇒ GFlay f (K1 _1 (f a)) (K1 _1 a) where

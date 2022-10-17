@@ -1,4 +1,6 @@
-{-# LANGUAGE TemplateHaskell, TypeApplications, UnicodeSyntax #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module InspectionTesting where
 

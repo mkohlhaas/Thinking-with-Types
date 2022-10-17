@@ -1,10 +1,12 @@
-{-# LANGUAGE DataKinds, TypeFamilies, UnicodeSyntax #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module Exercises where
 
 -- Exercise 1.4-i
 e1 ∷ (b → a) → (c → a) → Either b c → a
-e1 f _ (Left b)  = f b
+e1 f _ (Left b) = f b
 e1 _ g (Right c) = g c
 
 e2 ∷ (Either b c → a) → (b → a, c → a)
@@ -28,23 +30,23 @@ g2 f c b = f (b, c)
 
 -- Exercise 2.1.3-i
 -- ghci> :k Show
--- Show :: Type -> Constraint
+-- Show ∷ Type → Constraint
 
 -- Exercise 2.1.3-ii
 -- ghci> :k Functor
--- Functor :: (Type -> Type) -> Constraint
+-- Functor ∷ (Type → Type) → Constraint
 
 -- Exercise 2.1.3-iii
 -- ghci> :k Monad
--- Monad :: (Type -> Type) -> Constraint
+-- Monad ∷ (Type → Type) → Constraint
 
 -- Exercise 2.1.3-iv
 -- ghci> import Control.Monad.Trans
 -- ghci> :k MonadTrans
--- MonadTrans :: ((Type -> Type) -> Type -> Type) -> Constraint
+-- MonadTrans ∷ ((Type → Type) → Type → Type) → Constraint
 
 -- Exercise 2.1.4-i
-type family Not (x :: Bool) :: Bool where
+type family Not (x ∷ Bool) ∷ Bool where
   Not 'True = 'False
   Not 'False = 'True
 
@@ -66,13 +68,13 @@ instance Functor T1 where
 -- fmap f (T1 a) = T1 $ f <$> a
 
 instance Functor T5 where
-  fmap f (T5 g) = T5 $ \h -> g $ h . f
+  fmap f (T5 g) = T5 $ \h → g $ h . f
 
 -- 'Quasi-Pattern-matching' of functions via lambda.
--- h :: b -> Int
--- f :: a -> b
--- h . f :: a -> Int
--- g :: (a -> Int) -> Int
+-- h ∷ b → Int
+-- f ∷ a → b
+-- h . f ∷ a → Int
+-- g ∷ (a → Int) → Int
 
 -- fmap for functions is compose (.)
--- fmap f (T5 g) = T5 $ \bi -> g $ bi <$> f
+-- fmap f (T5 g) = T5 $ \bi → g $ bi <$> f

@@ -1,18 +1,32 @@
-{-# LANGUAGE AllowAmbiguousTypes, DataKinds, GADTs, TypeFamilies, UndecidableInstances, UnicodeSyntax #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module OpenSum where
 
-import Data.Kind     (Type)
-import Data.Proxy    (Proxy (Proxy))
-import Fcf           (Eval, Exp, FindIndex, FromMaybe, Stuck, TyEq, type (=<<))
-import GHC.TypeLits  (ErrorMessage (ShowType, Text, (:$$:), (:<>:)), KnownNat, Nat, TypeError, natVal)
+import Data.Kind (Type)
+import Data.Proxy (Proxy (Proxy))
+import Fcf (Eval, Exp, FindIndex, FromMaybe, Stuck, TyEq, type (=<<))
+import GHC.TypeLits (ErrorMessage (ShowType, Text, (:$$:), (:<>:)), KnownNat, Nat, TypeError, natVal)
 import Unsafe.Coerce (unsafeCoerce)
 
-type OpenSum :: (k → Type) → [k] → Type
+type OpenSum ∷ (k → Type) → [k] → Type
 data OpenSum f ts where
-  UnsafeOpenSum :: Int -> f t -> OpenSum f ts
+  UnsafeOpenSum ∷ Int → f t → OpenSum f ts
 
-type FindElem :: k → [k] → Exp Nat
+type FindElem ∷ k → [k] → Exp Nat
 type FindElem key ts = FromMaybe Stuck =<< FindIndex (TyEq key) ts
 
 type Member t ts = KnownNat (Eval (FindElem t ts))
@@ -23,7 +37,7 @@ findElem = fromIntegral . natVal $ Proxy @(Eval (FindElem t ts))
 inj ∷ ∀ f t ts. Member t ts ⇒ f t → OpenSum f ts
 inj = UnsafeOpenSum (findElem @t @ts)
 
-type FriendlyFindElem :: (k → Type) → k → [k] → Exp Nat
+type FriendlyFindElem ∷ (k → Type) → k → [k] → Exp Nat
 type family FriendlyFindElem f t ts where
   FriendlyFindElem f t ts =
     FromMaybe

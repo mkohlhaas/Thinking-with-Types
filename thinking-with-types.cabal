@@ -9,7 +9,6 @@ library
         Algebra
         Commander
         Constraints
-        Database
         Defunc
         DeriveAnyClass
         Exercises
@@ -17,6 +16,9 @@ library
         GADTs
         Generic.Monoid
         Generic.Omit
+        Generic.HKDNames
+        HKD
+        ImpredicativeTypes
         JSONSchema
         Kan
         Kinds
@@ -31,9 +33,7 @@ library
         RankN
         Roles
         ST
-        Sigma
         Singletons
-        SingletonsTH
         TicTacToe
         TypeApps
         War.Age
@@ -43,39 +43,24 @@ library
 
     hs-source-dirs:     app
     default-language:   Haskell2010
-    default-extensions:
-        BangPatterns BinaryLiterals ConstrainedClassMethods ConstraintKinds
-        DeriveDataTypeable DeriveFoldable DeriveFunctor DeriveGeneric
-        DeriveLift DeriveTraversable DoAndIfThenElse EmptyCase
-        EmptyDataDecls EmptyDataDeriving ExistentialQuantification
-        ExplicitForAll FlexibleContexts FlexibleInstances
-        ForeignFunctionInterface GADTSyntax GeneralisedNewtypeDeriving
-        HexFloatLiterals ImplicitPrelude ImportQualifiedPost InstanceSigs
-        KindSignatures MonomorphismRestriction MultiParamTypeClasses
-        NamedFieldPuns NumericUnderscores PatternGuards PolyKinds
-        PostfixOperators RankNTypes RelaxedPolyRec ScopedTypeVariables
-        StandaloneDeriving StandaloneKindSignatures StarIsType
-        TraditionalRecordSyntax TupleSections TypeApplications
-        TypeOperators TypeSynonymInstances
-
     ghc-options:        -Wall
     build-depends:
-        aeson,
-        base,
-        bytestring,
-        constraints,
-        containers,
-        first-class-families,
-        inspection-testing,
-        kan-extensions,
-        kind-generics,
-        kind-generics-th,
-        lens,
-        mtl,
-        singletons,
-        singletons-base,
-        singletons-th,
-        text,
-        transformers,
-        vector,
-        witherable
+        aeson -any,
+        base -any,
+        bytestring -any,
+        constraints -any,
+        containers -any,
+        first-class-families -any,
+        inspection-testing -any,
+        kan-extensions -any,
+        kind-generics -any,
+        kind-generics-th -any,
+        lens -any,
+        mtl -any,
+        singletons -any,
+        singletons-base -any,
+        singletons-th -any,
+        text -any,
+        transformers -any,
+        vector -any,
+        witherable -any

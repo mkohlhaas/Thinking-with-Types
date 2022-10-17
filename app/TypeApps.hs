@@ -1,4 +1,8 @@
-{-# LANGUAGE AllowAmbiguousTypes, UnicodeSyntax #-}
+{-# LANGUAGE AllowAmbiguousTypes #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module TypeApps where
 

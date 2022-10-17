@@ -1,26 +1,25 @@
-{-# LANGUAGE RoleAnnotations, TypeFamilies, UnicodeSyntax #-}
-{-# OPTIONS_GHC -fno-warn-unused-imports #-}
+{-# LANGUAGE RoleAnnotations #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module Roles where
 
-import Data.Coerce   (Coercible, coerce)
-import Data.Foldable (toList)
-import Data.Map      qualified as M
-import Data.Monoid   (Product (..), Sum (..))
+import Data.Coerce (coerce)
+import Data.Monoid (Sum (..))
 
 {-
 
 newtype ZipList a = ZipList
-  { getZipList :: [a]
+  { getZipList ∷ [a]
   }
 
 newtype Sum a = Sum
-  { getSum :: a
+  { getSum ∷ a
   }
 
-coerce :: Coercible a b => a -> b
+coerce ∷ Coercible a b ⇒ a → b
 
-insert :: Ord k => k -> v -> Map k v -> Map k v
+insert ∷ Ord k ⇒ k → v → Map k v → Map k v
 
 -}
 
@@ -30,7 +29,7 @@ slowSum = getSum . mconcat . fmap Sum
 fastSum ∷ [Int] → Int
 fastSum = getSum . mconcat . coerce
 
-newtype Reverse a = Reverse {getReverse :: a}
+newtype Reverse a = Reverse {getReverse ∷ a}
   deriving (Eq, Show)
 
 -- # OrdReverse

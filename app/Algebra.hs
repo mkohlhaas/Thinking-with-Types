@@ -1,12 +1,13 @@
-{-# LANGUAGE RecordWildCards, UnicodeSyntax #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE UnicodeSyntax #-}
 {-# OPTIONS_GHC -fno-warn-incomplete-uni-patterns #-}
 
 module Algebra where
 
 import Control.Monad (guard, join)
-import Data.Maybe    (isJust, listToMaybe)
-import Data.Void     (Void, absurd)
-import Data.Word     (Word8)
+import Data.Maybe (isJust, listToMaybe)
+import Data.Void (Void, absurd)
+import Data.Word (Word8)
 
 {-
 
@@ -17,8 +18,8 @@ data () = ()
 
 data Bool = False | True
 
-to   :: s -> t
-from :: t -> s
+to   ∷ s → t
+from ∷ t → s
 
 data Deal a b
   = This a
@@ -29,37 +30,37 @@ data Maybe a
   = Nothing
   | Just a
 
-voidUnit :: () -> (Void -> a)
+voidUnit ∷ () → (Void → a)
 voidUnit _ v = absurd v
 
 -}
 
 data MixedFraction a = Fraction
-  { mixedBit    :: Word8,
-    numerator   :: a,
-    denominator :: a
+  { mixedBit ∷ Word8,
+    numerator ∷ a,
+    denominator ∷ a
   }
 
 data Spin = Up | Down
 
 spinToBool1 ∷ Spin → Bool
-spinToBool1 Up   = False
+spinToBool1 Up = False
 spinToBool1 Down = True
 
 boolToSpin1 ∷ Bool → Spin
 boolToSpin1 False = Up
-boolToSpin1 True  = Down
+boolToSpin1 True = Down
 
 spinToBool2 ∷ Spin → Bool
-spinToBool2 Up   = True
+spinToBool2 Up = True
 spinToBool2 Down = False
 
 boolToSpin2 ∷ Bool → Spin
 boolToSpin2 False = Down
-boolToSpin2 True  = Up
+boolToSpin2 True = Up
 
 sumUnitTo ∷ Either a Void → a
-sumUnitTo (Left a)  = a
+sumUnitTo (Left a) = a
 sumUnitTo (Right v) = absurd v -- ! 1
 
 sumUnitFrom ∷ a → Either a Void
@@ -72,7 +73,7 @@ prodUnitFrom ∷ (a, ()) → a
 prodUnitFrom (a, ()) = a
 
 productRule1To ∷ (b → a) → (c → a) → Either b c → a
-productRule1To f _ (Left b)  = f b
+productRule1To f _ (Left b) = f b
 productRule1To _ g (Right c) = g c
 
 productRule1From ∷ (Either b c → a) → (b → a, c → a)
@@ -94,23 +95,23 @@ data Three = One | Two | Three
   deriving (Eq, Ord, Enum, Bounded)
 
 data TicTacToe a = TicTacToe
-  { topLeft   :: a,
-    topCenter :: a,
-    topRight  :: a,
-    midLeft   :: a,
-    midCenter :: a,
-    midRight  :: a,
-    botLeft   :: a,
-    botCenter :: a,
-    botRight  :: a
+  { topLeft ∷ a,
+    topCenter ∷ a,
+    topRight ∷ a,
+    midLeft ∷ a,
+    midCenter ∷ a,
+    midRight ∷ a,
+    botLeft ∷ a,
+    botCenter ∷ a,
+    botRight ∷ a
   }
 
-newtype TicTacToe2 a = TicTacToe2 {board :: Three → Three → a}
+newtype TicTacToe2 a = TicTacToe2 {board ∷ Three → Three → a}
 
 checkWinner ∷ TicTacToe (Maybe Bool) → Maybe Bool
 checkWinner (TicTacToe {..}) = join $
   listToMaybe $ do
-    line <-
+    line ←
       [ [topLeft, topCenter, topRight],
         [midLeft, midCenter, midRight],
         [botLeft, botCenter, botRight],

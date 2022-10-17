@@ -1,4 +1,7 @@
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE UnicodeSyntax #-}
+
 module War.Polysemy where
 
 import Control.Monad (ap)
@@ -30,13 +33,13 @@ foldFree ∷
   (∀ x. f x → m x) →
   Free f a →
   m a
-foldFree _ (Pure a)   = pure a
+foldFree _ (Pure a) = pure a
 foldFree run (Bind b) = run b >>= foldFree run
 
 sayHello ∷ Free Console ()
 sayHello = do
   send $ PutLine "What is your name?" ()
-  name <- send $ GetLine id
+  name ← send $ GetLine id
   send $ PutLine ("Hello, " <> name) ()
   where
     send f = Bind $ fmap pure f
@@ -44,7 +47,7 @@ sayHello = do
 sayHelloImproved ∷ CodensityT (Free Console) ()
 sayHelloImproved = do
   send $ PutLine "What is your name?" ()
-  name <- send $ GetLine id
+  name ← send $ GetLine id
   send $ PutLine ("Hello, " <> name) ()
   where
     send f = liftCodensity $ Bind $ fmap pure f
@@ -54,35 +57,33 @@ sayHello2 =
   Bind $
     PutLine "What is your name?" $
       Bind $
-        GetLine $ \name ->
+        GetLine $ \name →
           Bind $
             PutLine ("Hello, " <> name) $
               Pure ()
 
 interpretConsole ∷ Console a → IO a
-interpretConsole (GetLine f) = do
-  result <- getLine
-  pure $ f result
+interpretConsole (GetLine f) = f <$> getLine
 interpretConsole (PutLine str a) = do
   putStrLn str
   pure a
 
 newtype CodensityT m a = CodensityT
-  { unCodensityT :: ∀ r. (a → m r) → m r
+  { unCodensityT ∷ ∀ r. (a → m r) → m r
   }
 
 instance Functor (CodensityT m) where
-  fmap f (CodensityT c) = CodensityT $ \c' -> c (c' . f)
+  fmap f (CodensityT c) = CodensityT $ \c' → c (c' . f)
 
 instance Applicative (CodensityT m) where
-  pure a = CodensityT $ \c -> c a
-  CodensityT f <*> CodensityT a = CodensityT $ \br -> f $ \ab -> a $ br . ab
+  pure a = CodensityT $ \c → c a
+  CodensityT f <*> CodensityT a = CodensityT $ \br → f $ \ab → a $ br . ab
 
 -- # MonadCodensityT
 instance Monad (CodensityT m) where
   return = pure
-  CodensityT m >>= f = CodensityT $ \c ->
-    m $ \a -> unCodensityT (f a) c
+  CodensityT m >>= f = CodensityT $ \c →
+    m $ \a → unCodensityT (f a) c
 
 liftCodensity ∷ Functor f ⇒ Free f a → CodensityT (Free f) a
-liftCodensity t = CodensityT $ \k -> t >>= k
+liftCodensity t = CodensityT $ \k → t >>= k

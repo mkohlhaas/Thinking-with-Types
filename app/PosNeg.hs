@@ -18,10 +18,10 @@ newtype T5 a = T5 ((a → Int) → Int)
 
 -- # FunctorT5
 instance Functor T5 where
-  fmap f (T5 aii) = T5 $ \bi -> aii $ bi . f
+  fmap f (T5 aii) = T5 $ \bi → aii $ bi . f
 
 class Contravariant f where
-  contramap :: (a → b) → f b → f a
+  contramap ∷ (a → b) → f b → f a
 
 class Invariant f where
-  invmap :: (a → b) → (b → a) → f a → f b
+  invmap ∷ (a → b) → (b → a) → f a → f b

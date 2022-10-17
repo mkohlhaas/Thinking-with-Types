@@ -1,27 +1,36 @@
-{-# LANGUAGE DerivingVia, UndecidableInstances, UnicodeSyntax #-}
-
--- {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE EmptyCase #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module Generic.Monoid where
 
-import Data.Coerce  (coerce)
-import Data.Kind    (Constraint, Type)
-import Data.Monoid  (All, Last, Sum)
+import Data.Coerce (coerce)
+import Data.Kind (Constraint, Type)
+import Data.Monoid (All, Last, Sum)
 import GHC.Generics (Generic (..), K1 (K1), M1 (M1), U1 (..), V1, type (:*:) (..))
 
-type GSemigroup :: (k → Type) → Constraint
+type GSemigroup ∷ (k → Type) → Constraint
 class GSemigroup f where
-  gappend :: f x → f x → f x
+  gappend ∷ f x → f x → f x
 
 data BigProduct a = BigProduct
-  { bp_total  :: Sum Int,
-    bp_valid  :: All,
-    bp_recent :: Last a,
-    bp_names  :: [String]
+  { bp_total ∷ Sum Int,
+    bp_valid ∷ All,
+    bp_recent ∷ Last a,
+    bp_names ∷ [String]
   }
   deriving (Show, Generic)
 
-genericMappend ∷ (Generic a {- -- ! 1 -}, GSemigroup (Rep a {- -- ! 2 -})) ⇒ a → a → a
+-- genericMappend ∷ (Generic a {- -- ! 1 -}, GSemigroup (Rep a {- -- ! 2 -})) ⇒ a → a → a
+genericMappend ∷ (Generic a, GSemigroup (Rep a)) ⇒ a → a → a
 genericMappend a b = to $ gappend (from a) (from b) -- ! 3
 
 genericMempty ∷ (Generic a, GMonoid (Rep a)) ⇒ a
@@ -62,11 +71,13 @@ instance GSemigroup U1 where
 
 -- # GSemigroupV1
 instance GSemigroup V1 where
-  gappend v _ = case v of {} -- ! 1
+  gappend v _ = case v of {}
 
-type GMonoid :: (k → Type) → Constraint
+-- ! 1
+
+type GMonoid ∷ (k → Type) → Constraint
 class GMonoid f where
-  gmempty :: f x
+  gmempty ∷ f x
 
 -- # GMonoidM1
 instance GMonoid f ⇒ GMonoid (M1 _1 _2 f) where
@@ -100,7 +111,7 @@ instance (Generic a, GSemigroup (Rep a)) ⇒ Semigroup (Generically2 a) where
 instance (Generic a, GMonoid (Rep a), Semigroup (Generically a)) ⇒ Monoid (Generically a) where
   mempty = coerce $ genericMempty @a
 
-data Foo = Foo {f_total :: Sum Int, f_valid :: All}
+data Foo = Foo {f_total ∷ Sum Int, f_valid ∷ All}
   deriving (Show, Generic)
   deriving (Semigroup) via Generically Foo
 
@@ -108,8 +119,8 @@ data Foo = Foo {f_total :: Sum Int, f_valid :: All}
 
 -- # Foo2
 data Foo = Foo
-  { f_total  :: Sum Int
-  , f_valid  :: All
+  { f_total  ∷ Sum Int
+  , f_valid  ∷ All
   }
   deriving (Show, Generic)
   deriving (Semigroup, Monoid)

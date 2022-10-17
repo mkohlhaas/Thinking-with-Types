@@ -1,39 +1,49 @@
-{-# LANGUAGE ConstraintKinds, DataKinds, DeriveGeneric, EmptyCase, FlexibleContexts, FlexibleInstances, MultiParamTypeClasses, PolyKinds, StandaloneDeriving, TypeFamilies,
-             TypeOperators, UndecidableInstances, UndecidableSuperClasses, UnicodeSyntax #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE EmptyCase #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE ImportQualifiedPost #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UndecidableSuperClasses #-}
+{-# LANGUAGE UnicodeSyntax #-}
 {-# OPTIONS_GHC -Wall #-}
-
--- {-# LANGUAGE KindSignatures #-}
 
 module Database where
 
 import Data.IntMap.Strict (IntMap)
 import Data.IntMap.Strict qualified as IM
-import Data.Kind          (Type)
-import Data.Sequence      (Seq)
-import Data.Sequence      qualified as S
-import GHC.Generics       (Generic (..), K1 (K1), M1 (M1), U1 (..), V1, type (:*:) (..))
-import Prelude            hiding (lookup)
+import Data.Kind (Type)
+import Data.Sequence (Seq)
+import Data.Sequence qualified as S
+import GHC.Generics (Generic (..), K1 (K1), M1 (M1), U1 (..), V1, type (:*:) (..))
+import Prelude hiding (lookup)
 
 {-
 
 data PersonRow = PersonRow
-  { rowName    :: String
-  , rowAge     :: Int
-  , rowAddress :: Maybe String
+  { rowName    ∷ String
+  , rowAge     ∷ Int
+  , rowAddress ∷ Maybe String
   }
 
 data PersonTable = PersonTable
-  { tableName    :: Seq String  -- ! 1
-  , tableAge     :: Seq Int
-  , tableAddress :: IntMap String  -- ! 2
+  { tableName    ∷ Seq String  -- ! 1
+  , tableAge     ∷ Seq Int
+  , tableAddress ∷ IntMap String  -- ! 2
   }
 
 -}
 
-data PersonPattern (r :: Representation) = PersonPattern
-  { name    :: Column r 'NotNull String,
-    age     :: Column r 'NotNull Int,
-    address :: Column r 'Null String
+data PersonPattern (r ∷ Representation) = PersonPattern
+  { name ∷ Column r 'NotNull String,
+    age ∷ Column r 'NotNull Int,
+    address ∷ Column r 'Null String
   }
   deriving (Generic)
 
@@ -64,9 +74,9 @@ data Nullable
 
 type family
   Column
-    (r :: Representation)
-    (n :: Nullable)
-    (t :: Type) ::
+    (r ∷ Representation)
+    (n ∷ Nullable)
+    (t ∷ Type) ∷
     Type
   where
   Column 'RowRep 'NotNull t = t
@@ -77,7 +87,7 @@ type family
   Column 'UpdateRep 'Null t = Maybe (Update t) -- ! 1
 
 class GLookup table row where
-  gLookup :: Int → table x → Maybe (row x)
+  gLookup ∷ Int → table x → Maybe (row x)
 
 -- # GLookupK1IntMap
 -- 'TableRep ~> 'RowRep for 'Null
@@ -122,7 +132,7 @@ instance
     M1 <$> gLookup idx c
 
 class GInsert row table where
-  gInsert :: Int → row x → table x → table x
+  gInsert ∷ Int → row x → table x → table x
 
 -- # GInsertK1IntMap
 -- 'RowRep ~> 'TableRep for 'Null
@@ -165,7 +175,7 @@ instance
     M1 $ gInsert idx a c
 
 class GUpdate update table where
-  gUpdate :: Int → update x → table x → table x
+  gUpdate ∷ Int → update x → table x → table x
 
 -- # GUpdateK1Maybe
 instance
@@ -205,7 +215,7 @@ instance (GUpdate a b) ⇒ GUpdate (M1 _1 _2 a) (M1 _1 _2 b) where
     M1 $ gUpdate idx a c
 
 class GEmpty table where
-  gEmpty :: table x
+  gEmpty ∷ table x
 
 -- # K1GEmpty1
 instance GEmpty (K1 _1 (IntMap a)) where
@@ -236,7 +246,7 @@ class
   ( Generic (pat a),
     Generic (pat b),
     c (Rep (pat a)) (Rep (pat b))
-  ) =>
+  ) ⇒
   HKDImpl c pat a b
 
 -- # InstHKDImpl
@@ -247,41 +257,19 @@ instance
   ) ⇒
   HKDImpl c pat a b
 
-update ∷
-  HKDImpl GUpdate pat 'UpdateRep 'TableRep ⇒
-  Int →
-  pat 'UpdateRep →
-  pat 'TableRep →
-  pat 'TableRep
+update ∷ HKDImpl GUpdate pat 'UpdateRep 'TableRep ⇒ Int → pat 'UpdateRep → pat 'TableRep → pat 'TableRep
 update idx u t = to $ gUpdate idx (from u) (from t)
 
-insert ∷
-  HKDImpl GInsert pat 'RowRep 'TableRep ⇒
-  Int →
-  pat 'RowRep →
-  pat 'TableRep →
-  pat 'TableRep
+insert ∷ HKDImpl GInsert pat 'RowRep 'TableRep ⇒ Int → pat 'RowRep → pat 'TableRep → pat 'TableRep
 insert idx r t = to $ gInsert idx (from r) (from t)
 
-lookup ∷
-  HKDImpl GLookup pat 'TableRep 'RowRep ⇒
-  Int →
-  pat 'TableRep →
-  Maybe (pat 'RowRep)
+lookup ∷ HKDImpl GLookup pat 'TableRep 'RowRep ⇒ Int → pat 'TableRep → Maybe (pat 'RowRep)
 lookup idx t = to <$> gLookup idx (from t)
 
 {-
 
 -- # dumbLookup
-lookup
-    :: ( Generic (pat 'TableRep)
-       , Generic (pat 'RowRep)
-       , GLookup (Rep (pat 'TableRep))
-                 (Rep (pat 'RowRep))
-       )
-    => Int
-    -> pat 'TableRep
-    -> Maybe (pat 'RowRep)
+lookup ∷ ( Generic (pat 'TableRep) , Generic (pat 'RowRep) , GLookup (Rep (pat 'TableRep)) (Rep (pat 'RowRep))) ⇒ Int → pat 'TableRep → Maybe (pat 'RowRep)
 lookup idx t = fmap to $ gLookup idx (from t)
 
 -}

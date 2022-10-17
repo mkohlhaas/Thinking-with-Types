@@ -1,37 +1,45 @@
-{-# LANGUAGE DataKinds, TypeFamilies, UndecidableInstances, UnicodeSyntax #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module Printf where
 
-import Data.Kind    (Constraint, Type)
-import Data.Proxy   (Proxy (..))
+import Data.Kind (Constraint, Type)
+import Data.Proxy (Proxy (..))
 import GHC.TypeLits (KnownSymbol, Nat, Symbol, symbolVal)
 
 -- # typeList
-type (:<<) :: k1 → k2 → Type
+type (:<<) ∷ k1 → k2 → Type
 data a :<< b
 
 infixr 5 :<<
 
-type HasPrintf :: k → Constraint
+type HasPrintf ∷ k → Constraint
 class HasPrintf a where
-  type Printf a :: Type
-  format ::
+  type Printf a ∷ Type
+  format ∷
     String → -- ! 1
     Proxy a → -- ! 2
     Printf a -- ! 3
 
 -- # baseInstance
-instance KnownSymbol text ⇒ HasPrintf (text :: Symbol) where
+instance KnownSymbol text ⇒ HasPrintf (text ∷ Symbol) where
   type Printf text = String
   format s _ = s <> symbolVal (Proxy @text)
 
 -- # textInstance
-instance (HasPrintf a, KnownSymbol text) ⇒ HasPrintf ((text :: Symbol) :<< a) where
+instance (HasPrintf a, KnownSymbol text) ⇒ HasPrintf ((text ∷ Symbol) :<< a) where
   type Printf (text :<< a) = Printf a
   format s _ = format (s <> symbolVal (Proxy @text)) (Proxy @a)
 
 -- # paramInstance
-instance (HasPrintf a, Show param) ⇒ HasPrintf ((param :: Type) :<< a) where
+instance (HasPrintf a, Show param) ⇒ HasPrintf ((param ∷ Type) :<< a) where
   type Printf (param :<< a) = param → Printf a
   format s _ param = format (s <> show param) (Proxy @a)
 
@@ -46,5 +54,5 @@ instance {-# OVERLAPPING #-} HasPrintf a ⇒ HasPrintf (String :<< a) where
 wrongPrintf ∷ a → String → String
 wrongPrintf _ str = show str ++ " world!"
 
-type Pad :: Nat → k → Type
+type Pad ∷ Nat → k → Type
 data Pad n a

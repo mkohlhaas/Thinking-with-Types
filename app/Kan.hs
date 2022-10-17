@@ -9,9 +9,7 @@ import Data.Functor.Yoneda
 
 {-
 
-newtype Yoneda f a = Yoneda
-  { runYoneda :: ∀ b. (a -> b) -> f b
-  }
+newtype Yoneda f a = Yoneda { runYoneda :: ∀ b. (a -> b) -> f b }
 
 -- # FunctorYoneda
 instance Functor (Yoneda f) where

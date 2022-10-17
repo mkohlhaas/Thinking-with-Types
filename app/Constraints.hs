@@ -1,4 +1,8 @@
-{-# LANGUAGE GADTs, UndecidableInstances, UnicodeSyntax #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 
 module Constraints where
@@ -14,6 +18,6 @@ five_ = 5
 type ShowAndNum a = (Show a, Num a)
 
 -- # ShowNum
-class (Show a, Num a) => ShowNum a
+class (Show a, Num a) ⇒ ShowNum a
 
 instance (Show a, Num a) ⇒ ShowNum a

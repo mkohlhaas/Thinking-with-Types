@@ -1,3 +1,4 @@
+{-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE UnicodeSyntax #-}
 
 module ST where
@@ -5,7 +6,7 @@ module ST where
 import Data.IORef
 import System.IO.Unsafe (unsafePerformIO)
 
-newtype ST s a = ST {unsafeRunST :: a}
+newtype ST s a = ST {unsafeRunST ∷ a}
 
 instance Functor (ST s) where
   fmap f (ST a) = seq a . ST $ f a
@@ -17,7 +18,7 @@ instance Applicative (ST s) where
 instance Monad (ST s) where
   ST a >>= f = seq a $ f a
 
-newtype STRef s a = STRef {unSTRef :: IORef a}
+newtype STRef s a = STRef {unSTRef ∷ IORef a}
 
 newSTRef ∷ a → ST s (STRef s a)
 newSTRef = pure . STRef . unsafePerformIO . newIORef
@@ -30,22 +31,22 @@ writeSTRef ref = pure . unsafePerformIO . writeIORef (unSTRef ref)
 
 modifySTRef ∷ STRef s a → (a → a) → ST s ()
 modifySTRef ref f = do
-  a <- readSTRef ref
+  a ← readSTRef ref
   writeSTRef ref $ f a
 
 runST ∷ (∀ s. ST s a) → a
-runST x = unsafeRunST x
+runST = unsafeRunST
 
 {-
 
 -- # runSTType
-runST :: (∀ s. ST s a) -> a
+runST ∷ (∀ s. ST s a) → a
 
 -}
 
 safeExample ∷ ST s String
 safeExample = do
-  ref <- newSTRef "hello"
+  ref ← newSTRef "hello"
   modifySTRef ref (++ " world")
   readSTRef ref
 
@@ -53,7 +54,7 @@ safeExample = do
 
 -- # signature
 runST
-    :: (∀ s. ST s (STRef s Bool)) -- ! 1
-    -> STRef s Bool  -- ! 2
+    ∷ (∀ s. ST s (STRef s Bool)) -- ! 1
+    → STRef s Bool  -- ! 2
 
 -}

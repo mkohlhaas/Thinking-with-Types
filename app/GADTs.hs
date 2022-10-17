@@ -1,4 +1,9 @@
-{-# LANGUAGE DataKinds, GADTs, TypeFamilies, UndecidableInstances, UnicodeSyntax #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 {-# OPTIONS -Wall #-}
 
@@ -7,36 +12,36 @@ module GADTs where
 import Data.Kind (Constraint, Type)
 
 data Expr a where
-  LitInt :: Int -> Expr Int
-  LitBool :: Bool -> Expr Bool
-  Add :: Expr Int -> Expr Int -> Expr Int
-  Not :: Expr Bool -> Expr Bool
-  If :: Expr Bool -> Expr a -> Expr a -> Expr a
+  LitInt ∷ Int → Expr Int
+  LitBool ∷ Bool → Expr Bool
+  Add ∷ Expr Int → Expr Int → Expr Int
+  Not ∷ Expr Bool → Expr Bool
+  If ∷ Expr Bool → Expr a → Expr a → Expr a
 
 evalExpr ∷ Expr a → a
-evalExpr (LitInt i)  = i
+evalExpr (LitInt i) = i
 evalExpr (LitBool b) = b
-evalExpr (Add x y)   = evalExpr x + evalExpr y
-evalExpr (Not x)     = not $ evalExpr x
-evalExpr (If b x y)  = if evalExpr b then evalExpr x else evalExpr y
+evalExpr (Add x y) = evalExpr x + evalExpr y
+evalExpr (Not x) = not $ evalExpr x
+evalExpr (If b x y) = if evalExpr b then evalExpr x else evalExpr y
 
 data Expr_ a
-  = (a ~ Int) => LitInt_ Int
-  | (a ~ Bool) => LitBool_ Bool
-  | (a ~ Int) => Add_ (Expr_ Int) (Expr_ Int)
-  | (a ~ Bool) => Not_ (Expr_ Bool)
+  = (a ~ Int) ⇒ LitInt_ Int
+  | (a ~ Bool) ⇒ LitBool_ Bool
+  | (a ~ Int) ⇒ Add_ (Expr_ Int) (Expr_ Int)
+  | (a ~ Bool) ⇒ Not_ (Expr_ Bool)
   | If_ (Expr_ Bool) (Expr_ a) (Expr_ a)
 
 evalExpr_ ∷ Expr_ a → a
-evalExpr_ (LitInt_ i)  = i
+evalExpr_ (LitInt_ i) = i
 evalExpr_ (LitBool_ b) = b
-evalExpr_ (Add_ x y)   = evalExpr_ x + evalExpr_ y
-evalExpr_ (Not_ x)     = not $ evalExpr_ x
-evalExpr_ (If_ b x y)  = if evalExpr_ b then evalExpr_ x else evalExpr_ y
+evalExpr_ (Add_ x y) = evalExpr_ x + evalExpr_ y
+evalExpr_ (Not_ x) = not $ evalExpr_ x
+evalExpr_ (If_ b x y) = if evalExpr_ b then evalExpr_ x else evalExpr_ y
 
-data HList (ts :: [Type]) where
-  HNil :: HList '[]
-  (:#) :: t -> HList ts -> HList (t ': ts)
+data HList (ts ∷ [Type]) where
+  HNil ∷ HList '[]
+  (:#) ∷ t → HList ts → HList (t ': ts)
 
 infixr 5 :#
 
@@ -47,7 +52,7 @@ showBool ∷ HList '[a, Bool, b] → String
 showBool (_ :# b :# _ :# HNil) = show b
 
 hLength ∷ HList ts → Int
-hLength HNil      = 0
+hLength HNil = 0
 hLength (_ :# ts) = 1 + hLength ts
 
 {-
@@ -57,7 +62,7 @@ instance Eq (HList '[]) where
   HNil == HNil = True
 
 -- # eqHCons
-instance (Eq t, Eq (HList ts)) => Eq (HList (t ': ts)) where
+instance (Eq t, Eq (HList ts)) ⇒ Eq (HList (t ': ts)) where
   (a :# as) == (b :# bs) = a == b && as == bs
 
 -- # ordHNil
@@ -65,7 +70,7 @@ instance Ord (HList '[]) where
   compare HNil HNil = EQ
 
 -- # ordHCons
-instance (Ord t, Ord (HList ts)) => Ord (HList (t ': ts)) where
+instance (Ord t, Ord (HList ts)) ⇒ Ord (HList (t ': ts)) where
   compare (a :# as) (b :# bs) = compare a b <> compare as bs
 
 -- # showHNil
@@ -73,34 +78,34 @@ instance Show (HList '[]) where
   show HNil = "HNil"
 
 -- # showHCons
-instance (Show t, Show (HList ts)) => Show (HList (t ': ts)) where
+instance (Show t, Show (HList ts)) ⇒ Show (HList (t ': ts)) where
   show (a :# as) = show a <> " :# " <> show as
 
 -}
 
 -- # eqHList
 instance All Eq ts ⇒ Eq (HList ts) where
-  HNil == HNil           = True
+  HNil == HNil = True
   (a :# as) == (b :# bs) = a == b && as == bs
 
 -- # ordHList
 instance (All Eq ts, All Ord ts) ⇒ Ord (HList ts) where
-  compare HNil HNil           = EQ
+  compare HNil HNil = EQ
   compare (a :# as) (b :# bs) = compare a b <> compare as bs
 
 -- # showHList
 instance (All Show ts) ⇒ Show (HList ts) where
-  show HNil      = "HNil"
+  show HNil = "HNil"
   show (a :# as) = show a <> " :# " <> show as
 
-type family All (c :: Type → Constraint) (ts :: [Type]) :: Constraint where
+type family All (c ∷ Type → Constraint) (ts ∷ [Type]) ∷ Constraint where
   All c '[] = ()
   All c (t ': ts) = (c t, All c ts)
 
-type family AllEq (ts :: [Type]) :: Constraint where
+type family AllEq (ts ∷ [Type]) ∷ Constraint where
   AllEq '[] = ()
   AllEq (t ': ts) = (Eq t, AllEq ts)
 
--- foldHList :: ∀ c ts m . (All c ts, Monoid m) => (∀ t. c t => t -> m) -> HList ts -> m
+-- foldHList ∷ ∀ c ts m . (All c ts, Monoid m) ⇒ (∀ t. c t ⇒ t → m) → HList ts → m
 -- foldHList _ HNil = mempty
 -- foldHList f (a :# as) = f a <> foldHList @c f as

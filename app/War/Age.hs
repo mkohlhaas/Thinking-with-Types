@@ -1,4 +1,7 @@
-{-# LANGUAGE DataKinds, GADTs, UnicodeSyntax #-}
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE StandaloneKindSignatures #-}
+{-# LANGUAGE UnicodeSyntax #-}
 
 module War.Age where
 
@@ -16,22 +19,22 @@ data Age = Current | Stale
 
 -}
 
-type Tracked :: Age → Type → Type
+type Tracked ∷ Age → Type → Type
 newtype Tracked age a = UnsafeTracked
-  { unTrack :: a
+  { unTrack ∷ a
   }
 
-type PositionMap :: Age → Age → Type
+type PositionMap ∷ Age → Age → Type
 newtype PositionMap from to = PositionMap
-  { getPositionMapping :: PositionMapping
+  { getPositionMapping ∷ PositionMapping
   }
 
 class MapAge a where
-  mapAgeFrom ::
+  mapAgeFrom ∷
     PositionMap from to →
     Tracked to a →
     Tracked from a
-  mapAgeTo ::
+  mapAgeTo ∷
     PositionMap from to →
     Tracked from a →
     Tracked to a
@@ -42,9 +45,9 @@ instance MapAge Range where
   mapAgeTo = coerce toCurrentRange
 
 data TrackedStale a where
-  TrackedStale ::
-    Tracked ('Stale s) a ->
-    PositionMap ('Stale s) 'Current ->
+  TrackedStale ∷
+    Tracked ('Stale s) a →
+    PositionMap ('Stale s) 'Current →
     TrackedStale a
 
 fromCurrentRange ∷ PositionMapping → Range → Range
