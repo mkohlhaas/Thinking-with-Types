@@ -6,6 +6,8 @@
   - app/Algebra.hs
   - app/Kinds.hs
   - app/PosNeg.hs
+  - app/Misc.hs
+  - app/TypeApps.hs
 
 ```
 default-extensions:
