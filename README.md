@@ -2,6 +2,10 @@
 - Use ghc Version 9.0.2!
 - Some files did not make it into the cabal file. Use original cabal file for diff.
 
+- File Order:
+  - app/Algebra.hs
+  - app/Kinds.hs
+
 ```
 default-extensions:
         AllowAmbiguousTypes
