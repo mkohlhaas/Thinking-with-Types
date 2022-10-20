@@ -8,6 +8,8 @@
   - app/PosNeg.hs
   - app/Misc.hs
   - app/TypeApps.hs
+  - app/Constraints.hs
+  - app/GADTs.hs
 
 ```
 default-extensions:

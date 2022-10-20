@@ -307,9 +307,11 @@ adminUser = User (Just Proxy)
 
 -- Unlike data constructors, we're unfortunately unable to automatically promote term-level functions into type-level ones.
 -- However, after enabling TypeFamilies, we can instead "promote" or by explicitly duplicating this logic and writing a completely separate, closed type family.
+-- You can think of closed type families as functions at the type-level!
+-- Type families are like functions for types.
 
 -- regular term-level function
-or ∷ Bool → Bool → Bool
+or ∷ Bool → Bool → Bool -- type signature
 or True _ = True
 or False y = y
 
