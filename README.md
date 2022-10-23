@@ -12,6 +12,7 @@
   - app/GADTs.hs
   - app/RankN.hs
   - app/ST.hs
+  - app/Roles.hs
 
 ```
 default-extensions:
