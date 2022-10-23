@@ -10,6 +10,8 @@
   - app/TypeApps.hs
   - app/Constraints.hs
   - app/GADTs.hs
+  - app/RankN.hs
+  - app/ST.hs
 
 ```
 default-extensions:
