@@ -84,8 +84,15 @@ modifySTRef ref f = do
 
 -- Escaping from the ST monad. This is merely unsafeRunST, but with a specialized type signature.
 -- Tagging `a` with an existential type: ST a ⇒ ∀ s. ST s a
--- Introduction of the ST trick: The type `(forall s. ST s a)` indicates that runST is capable of
+-- Introduction of the ST trick: The type `(∀ s. ST s a)` indicates that runST is capable of
 -- running only those STs which do not depend on their `s` parameter.
+-- The ∀ here acts as a quantifier over `s`. The type variable exists in scope only within `ST s a`.
+-- Because it's existential, without a quantifier, we have no way of talking about the type.
+-- It simply doesn’t exist outside of its ∀!
+-- And this is the secret to why the ST trick works.
+-- We exploit this fact that existentials can't leave their quantifier in order to scope our data.
+-- The "quarantined zone" is defined with an existential quantifier, we tag our quarantined data
+-- with the resulting existential type, and the type system does the rest.
 runST ∷ (∀ s. ST s a) → a
 runST = unsafeRunST
 
@@ -98,22 +105,36 @@ safeExample = do
 -- >>> runST safeExample
 -- "hello world"
 
+-- >>> :type runST safeExample
+-- runST safeExample :: String
+
 -- The type system disallows any code that would leak a reference to a STRef.
 -- >>> runST (newSTRef True)
 -- Couldn't match type ...
 
-{-
+-- >>> :type newSTRef True
+-- newSTRef True ∷ ST s (STRef s Bool)
 
--- # runSTType
-runST ∷ (∀ s. ST s a) → a
+-- signature of runST for `newSTRef True`
+--    Type variable `s` is introduced and scoped.
+--            |                    Later `s` is referenced.
+--            |              But at this point the type no longer exists.
+--            |                     There isn't any type `s` in scope!
+--            |                               |
+-- runST ∷ (∀ s. ST s (STRef s Bool)) → STRef s Bool
 
--}
+-- signature of runST for safeExample
+--    Type variable `s` is introduced and scoped.
+--            |                    There is no reference to `s`.
+--            |                             |
+-- runST ∷ (∀ s. ST s (STRef s String)) → String
 
-{-
+-- GHC calls `s` a rigid skolem type variable.
+-- Rigid variables are those that are constrained by a type signature written by a programmer.
+-- In other words, they are not allowed to be type inferred.
+-- A skolem is, for all intents and purposes, any existential type.
+-- The purpose of the phantom s variable in ST and STRef is exactly to introduce a rigid skolem.
+-- If it weren't rigid (specified), it would be free to vary, and Haskell would correctly infer that it is unused.
+-- If it weren't a skolem, we would be unable to restrict its existence.
 
--- # signature
-runST
-    ∷ (∀ s. ST s (STRef s Bool)) -- ! 1
-    → STRef s Bool  -- ! 2
-
--}
+-- This ST trick can be used whenever you want to restrict the existence of some piece of data.
