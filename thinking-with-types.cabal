@@ -51,6 +51,7 @@ library
         constraints -any,
         containers -any,
         first-class-families -any,
+        ghc-prim -any,
         inspection-testing -any,
         kan-extensions -any,
         kind-generics -any,

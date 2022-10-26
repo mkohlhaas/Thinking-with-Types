@@ -13,6 +13,12 @@
   - app/RankN.hs
   - app/ST.hs
   - app/Roles.hs
+  - app/PrintfTypes.hs
+  - app/Printf.hs
+  - app/Defunc.hs
+  - app/FCTF.hs
+  - app/OpenSum.hs
+  - app/OpenProduct.hs
 
 ```
 default-extensions:

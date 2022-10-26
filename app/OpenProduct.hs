@@ -5,6 +5,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -14,43 +15,180 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE UnicodeSyntax #-}
+{-# LANGUAGE InstanceSigs #-}
 
 module OpenProduct where
+
+-- The implementation will associate names with each type inside.
+-- These names can later be used by the user to refer back to the data contained.
+-- As a result, the majority of our implementation will be type-level book-keeping.
 
 import Data.Constraint (Constraint)
 import Data.Kind (Type)
 import Data.Proxy (Proxy (..))
 import Data.Vector qualified as V
 import Fcf (Eval, Exp, Filter, FindIndex, FromMaybe, Fst, Lookup, Map, Not, Null, SetIndex, Stuck, TyEq, type (<=<), type (=<<))
-import GHC.OverloadedLabels (IsLabel (..))
+import GHC.OverloadedLabels -- (IsLabel (..))
 import GHC.TypeLits (ErrorMessage (..), KnownNat, Nat, Symbol, TypeError, natVal)
 import Unsafe.Coerce (unsafeCoerce)
 
+-- defining a container Any that will existentialize away its `k` index
 data Any (f ∷ k → Type) where
   Any ∷ f t → Any f
 
-type OpenProduct ∷ (k → Type) → [(Symbol, k)] → Type
+-- defining OpenProduct as a Data.Vector of Anys
 -- TODO(sandy): this annotation is probably wrong
-data OpenProduct f ts where -- ! 1
+type OpenProduct ∷ (k → Type) → [(Symbol, k)] → Type
+data OpenProduct f ts where
   OpenProduct ∷ V.Vector (Any f) → OpenProduct f ts
 
+-- an empty OpenProduct has an empty list of types and an empty Vector
 nil ∷ OpenProduct f '[]
 nil = OpenProduct V.empty
 
+-- Because all data inside an OpenProduct will be labeled by a SYMBOL,
+-- we need a way for users to talk about SYMBOLs at the term-level
 data Key (key ∷ Symbol) = Key
 
--- # keyIsLabel
-instance (key ~ key' {- -- ! 1 -}) ⇒ IsLabel key (Key key') where
-  fromLabel = Key
+-- >>> :type Key @"myData"
+-- Key @"myData" :: Key "myData"
 
-type UniqueKey ∷ k → [(k, t)] → Exp Bool
-type UniqueKey key ts = Null =<< Filter (TyEq key <=< Fst) ts
-
+-- adds a new '(key, k) to the head of the type list,
+-- and inserts the `f k` to the head of the internal Vector.
+-- In this way, it preserves the invariant that our list of types has the same ordering as the data in.
 badInsert ∷ Key key → f t → OpenProduct f ts → OpenProduct f ('(key, t) ': ts)
 badInsert _ ft (OpenProduct v) = OpenProduct $ V.cons (Any ft) v
 
+-- >>> let result = badInsert (Key @"key") (Just "hello") nil
+-- >>> :type result
+-- result :: OpenProduct Maybe '[ '("key", String)]
+
+-- >>> let result1 = badInsert (Key @"key1") (Just "hello2") nil
+-- >>> let result2 = badInsert (Key @"key2") (Just True) result1
+-- >>> :type result2
+-- result2 :: OpenProduct Maybe '[ '("key2", Bool), '("key1", String)]
+
+-- Same key, different values - not ideal
+-- >>> let result1 = badInsert (Key @"key1") (Just "hello2") nil
+-- >>> let result2 = badInsert (Key @"key1") (Just True) result1
+-- >>> :type result2
+-- result2 :: OpenProduct Maybe '[ '("key1", Bool), '("key1", String)]
+
+-- type family UniqueKey computes whether a key is unique
+-- UniqueKey is the type-level equivalent of `null . filter (== key) . fst`.
+type UniqueKey ∷ k → [(k, t)] → Exp Bool
+type UniqueKey key ts = Null =<< Filter (TyEq key <=< Fst) ts
+
+-- TODO
+-- >>> :kind! Eval(UniqueKey (Key @"key3") '[ '( "key1", Bool), '( "key2", String)])
+
 oldInsert ∷ Eval (UniqueKey key ts) ~ 'True ⇒ Key key → f t → OpenProduct f ts → OpenProduct f ('(key, t) ': ts)
 oldInsert _ ft (OpenProduct v) = OpenProduct $ V.cons (Any ft) v
+
+-- >>> let result = oldInsert (Key @"key") (Just "hello") nil
+-- >>> :type result
+-- result :: OpenProduct Maybe '[ '("key", String)]
+
+-- >>> let result1 = oldInsert (Key @"key1") (Just "hello2") nil
+-- >>> let result2 = oldInsert (Key @"key2") (Just True) result1
+-- >>> :type result2
+-- result2 :: OpenProduct Maybe '[ '("key2", Bool), '("key1", String)]
+
+-- no double insert possible
+-- >>> let result1 = oldInsert (Key @"key1") (Just "hello2") nil
+-- >>> let result2 = oldInsert (Key @"key1") (Just True) result1
+-- >>> :type result2
+-- Couldn't match type 'False with 'True
+
+-- lookup in list of types to figure out which index of the Vector to return.
+type FindElem ∷ Symbol → [(Symbol, k)] → Nat
+type FindElem key ts = Eval (FromMaybe Stuck =<< FindIndex (TyEq key <=< Fst) ts)
+
+-- >>> :kind! (FindElem "key1" '[ '("key1", Bool)])
+-- (FindElem "key1" '[ '( "key1", Bool)]) :: Natural
+-- = 0
+
+-- >>> :kind! (FindElem "key3" '[ '("key1", Bool), '("key2", Int), '("key3", String)])
+-- (FindElem "key3" '[ '("key1", Bool), '("key2", Int), '("key3", String)]) :: Natural
+-- = 2
+
+-- >>> :kind! (FindElem "key2" '[ '("key1", Bool)])
+-- (FindElem "key2" '[ '( "key1", Bool)]) :: Natural
+-- = Stuck
+
+findElem ∷ ∀ key ts. KnownNat (FindElem key ts) ⇒ Int
+findElem = fromIntegral . natVal $ Proxy @(FindElem key ts)
+
+-- >>> findElem @"key1" @'[ '("key1", Bool)]
+-- 0
+
+-- >>> findElem @"key3" @'[ '("key1", Bool), '("key2", Int), '("key3", String)]
+-- 2
+
+type LookupType ∷ k → [(k, t)] → Exp t
+type LookupType key ts = FromMaybe Stuck =<< Lookup key ts
+
+get ∷ ∀ key ts f. KnownNat (FindElem key ts) ⇒ Key key → OpenProduct f ts → f (Eval (LookupType key ts))
+get _ (OpenProduct v) = unAny $ V.unsafeIndex v $ findElem @key @ts
+  where
+    unAny (Any a) = unsafeCoerce a
+
+-- >>> get (Key @"key1") (oldInsert (Key @"key1") (Just "hello2") nil)
+-- Just "hello2"
+
+-- >>> let result1 = oldInsert (Key @"key1") (Just "hello2") nil
+-- >>> let result2 = oldInsert (Key @"key2") (Just True) result1
+-- >>> get (Key @"key2") result2
+-- Just True
+
+-- scans through `ts` and sets the type associated with `key` to `t`
+type UpdateElem ∷ Symbol → k → [(Symbol, k)] → Exp [(Symbol, k)]
+type UpdateElem key t ts = SetIndex (FindElem key ts) '(key, t) ts
+
+-- TODO
+-- >>> kind! Eval(UpdateElem (Key @"key1") '[ '("key1", Bool), '("key2", Int), '("key3", String)])
+-- parse error on input '
+
+-- update the value stored in our Vector at the same place we want to replace the type in `ts`
+update ∷ ∀ key ts t f. KnownNat (FindElem key ts) ⇒ Key key → f t → OpenProduct f ts → OpenProduct f (Eval (UpdateElem key t ts))
+update _ ft (OpenProduct v) = OpenProduct $ v V.// [(findElem @key @ts, Any ft)]
+
+-- TODO
+-- >>> let result1 = oldInsert (Key @"key1") (Just "hello2") nil
+-- >>> let result2 = oldInsert (Key @"key2") (Just True) result1
+-- >>> update (Key @"key1") Maybe result2
+-- Illegal term-level use of the type constructor `Maybe'
+--   imported qualified from `Prelude'
+--   (and originally defined in `GHC.Maybe')
+-- In the second argument of `update', namely `Maybe'
+-- In the expression: update (Key @"key1") Maybe result2
+-- In an equation for `it_a6Nix':
+--     it_a6Nix = update (Key @"key1") Maybe result2
+
+insert ∷ RequireUniqueKey (Eval (UniqueKey key ts)) key t ts ⇒ Key key → f t → OpenProduct f ts → OpenProduct f ('(key, t) ': ts)
+insert _ ft (OpenProduct v) = OpenProduct $ V.cons (Any ft) v
+
+-- OverloadedLabels:  "get #example foo" ⇒ "get (Key @"example") foo"
+-- Notice that the instance head is not of the form
+-- `IsLabel key (Key key)`, but instead has two type variables
+-- `key` and `key'`) which are then asserted to be the same.
+-- This odd phrasing is due to a quirk with Haskell's instance resolution,
+-- and is known as the CONSTRAINT TRICK.
+instance (key ~ key') ⇒ IsLabel key (Key key') where
+  fromLabel ∷ (key ~ key') ⇒ Key key'
+  fromLabel = Key
+
+-- >>> get (Key @"key1") (oldInsert (Key @"key1") (Just "hello2") nil)
+-- Just "hello2"
+
+-- >>> get #key1 (oldInsert #key1 (Just "hello1") nil)
+-- Just "hello1"
+
+overloadedKey ∷ Maybe [Char]
+overloadedKey = get #key1 (oldInsert #key1 (Just "hello1") nil)
+
+-- >>> overloadedKey
+-- Just "hello1"
 
 type RequireUniqueKey ∷ Bool → Symbol → k → [(Symbol, k)] → Constraint
 type family RequireUniqueKey result key t ts where
@@ -69,9 +207,6 @@ type family RequireUniqueKey result key t ts where
           ':$$: 'Text "Consider using `update' " -- ! 3
             ':<>: 'Text "instead of `insert'."
       )
-
-insert ∷ RequireUniqueKey (Eval (UniqueKey key ts)) key t ts ⇒ Key key → f t → OpenProduct f ts → OpenProduct f ('(key, t) ': ts)
-insert _ ft (OpenProduct v) = OpenProduct $ V.cons (Any ft) v
 
 -- upsert
 --     ∷ Key key
@@ -110,23 +245,6 @@ upsert _ ft (OpenProduct v) =
   OpenProduct $ case upsertElem @(UpsertLoc key ts) of
     Nothing → V.cons (Any ft) v
     Just n → v V.// [(n, Any ft)]
-
-type FindElem ∷ Symbol → [(Symbol, k)] → Nat
-type FindElem key ts = Eval (FromMaybe Stuck =<< FindIndex (TyEq key <=< Fst) ts)
-
-findElem ∷ ∀ key ts. KnownNat (FindElem key ts) ⇒ Int
-findElem = fromIntegral . natVal $ Proxy @(FindElem key ts)
-
-type LookupType ∷ k → [(k, t)] → Exp t
-type LookupType key ts = FromMaybe Stuck =<< Lookup key ts
-
-get ∷ ∀ key ts f. KnownNat (FindElem key ts) ⇒ Key key → OpenProduct f ts → f (Eval (LookupType key ts)) -- ! 1
-get _ (OpenProduct v) = unAny $ V.unsafeIndex v $ findElem @key @ts
-  where
-    unAny (Any a) = unsafeCoerce a -- ! 2
-
-type UpdateElem ∷ Symbol → k → [(Symbol, k)] → Exp [(Symbol, k)]
-type UpdateElem key t ts = SetIndex (FindElem key ts) '(key, t) ts
 
 type FriendlyFindElem ∷ Symbol → Symbol → [(Symbol, k)] → k
 type family FriendlyFindElem funcName key ts where
@@ -175,9 +293,6 @@ type family FriendlyFindElem2 funcName key ts where
 friendlyUpdate ∷ ∀ key ts t f. (KnownNat (FriendlyFindElem "friendlyUpdate" key ts), KnownNat (FindElem key ts)) ⇒ Key key → f t → OpenProduct f ts → OpenProduct f (Eval (UpdateElem key t ts))
 friendlyUpdate _ ft (OpenProduct v) =
   OpenProduct $ v V.// [(findElem @key @ts, Any ft)]
-
-update ∷ ∀ key ts t f. KnownNat (FindElem key ts) ⇒ Key key → f t → OpenProduct f ts → OpenProduct f (Eval (UpdateElem key t ts))
-update _ ft (OpenProduct v) = OpenProduct $ v V.// [(findElem @key @ts, Any ft)]
 
 type DeleteElem key = Filter (Not <=< TyEq key <=< Fst)
 
