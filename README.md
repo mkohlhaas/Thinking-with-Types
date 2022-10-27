@@ -19,6 +19,12 @@
   - app/FCTF.hs
   - app/OpenSum.hs
   - app/OpenProduct.hs
+  - app/Misc.hs (Chapter 12)
+  - app/DeriveAnyClass.hs
+  - (app/Generic/Omit.hs)
+  - app/JSONSchema.hs
+  - app/InspectionTesting.hs
+  - app/Kan.hs
 
 ```
 default-extensions:

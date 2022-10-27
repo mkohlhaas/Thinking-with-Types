@@ -19,6 +19,7 @@ library
         Generic.HKDNames
         HKD
         ImpredicativeTypes
+        InspectionTesting
         JSONSchema
         Kan
         Kinds
@@ -46,6 +47,7 @@ library
     ghc-options:        -Wall
     build-depends:
         aeson -any,
+        aeson-pretty -any,
         base -any,
         bytestring -any,
         constraints -any,

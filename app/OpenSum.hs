@@ -28,6 +28,7 @@ module OpenSum where
 
 -- We want to build this sort of "extensible" record type.
 
+import Data.Functor.Identity
 import Data.Proxy (Proxy (Proxy))
 import Fcf (Eval, Exp, FindIndex, FromMaybe, Stuck, TyEq, type (=<<))
 import GHC.TypeLits (ErrorMessage (ShowType, Text, (:$$:), (:<>:)), KnownNat, Nat, TypeError, natVal)
@@ -149,6 +150,18 @@ findElem = fromIntegral . natVal $ Proxy @(Eval (FindElem t ts))
 inj ∷ ∀ f t ts. Member t ts ⇒ f t → OpenSum f ts
 inj = UnsafeOpenSum (findElem @t @ts)
 
+injTrue :: OpenSum Identity '[Bool, String]
+injTrue = inj (Identity True) :: OpenSum Identity '[ Bool , String ]
+
+-- >>> prj injTrue :: Maybe (Identity Int)
+-- No instance for (KnownNat Stuck) arising from a use of `prj'
+-- In the expression: prj injTrue :: Maybe (Identity Int)
+-- In an equation for `it_adJQ':
+--     it_adJQ = prj injTrue :: Maybe (Identity Int)
+
+-- >>> let foo = inj (Identity True) :: OpenSum Identity '[ Bool , String ]
+-- Not in scope: type constructor or class `Identity'
+
 -- >>> :type inj @((→) String) @Int @'[Bool, Int]
 -- inj @((→) String) @Int @'[Bool, Int] ∷ (String → Int) → OpenSum ((→) String) '[Bool, Int]
 
@@ -219,6 +232,12 @@ match fn (UnsafeOpenSum _ t) = fn t
 -- TODO
 -- >>> match ... ???
 
+-- The semantics of TypeError is that if GHC is ever asked to solve one,
+-- it emits the given type error instead, and refuse to compile.
+
+-- Note that FriendlyFindElem is defined as a type family, rather than a type synonym as FCFs usually are.
+-- This is to delay the expansion of the type error so GHC doesn't emit the error immediately.
+-- We now attempt to find `t` in `ts`, and use FromMaybe to emit a type error in the case that we didn't find it.
 type FriendlyFindElem ∷ (k → Type) → k → [k] → Exp Nat
 type family FriendlyFindElem f t ts where
   FriendlyFindElem f t ts =
@@ -236,3 +255,17 @@ type family FriendlyFindElem f t ts where
 
 friendlyPrj ∷ ∀ f t ts. (KnownNat (Eval (FriendlyFindElem f t ts)), Member t ts) ⇒ OpenSum f ts → Maybe (f t)
 friendlyPrj = prj
+
+-- >>> friendlyPrj
+-- Attempted to call `friendlyPrj' to produce a `f_anco[sk:1]
+--                                                 t_ancp[sk:1]'.
+-- But the OpenSum can only contain one of:
+--   ts_ancq[sk:1]
+-- When checking the inferred type
+--   it_anaY :: forall {k} {f :: k -> Type} {t :: k} {ts :: [k]}.
+--              (KnownNat
+--                 (Eval (FromMaybe (TypeError ...) (Eval (FindIndex (TyEq t) ts)))),
+--               KnownNat
+--                 (Eval (FromMaybe Stuck (Eval (FindIndex (TyEq t) ts))))) =>
+--              OpenSum f ts -> Maybe (f t)
+

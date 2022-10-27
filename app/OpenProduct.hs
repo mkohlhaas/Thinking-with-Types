@@ -165,9 +165,6 @@ update _ ft (OpenProduct v) = OpenProduct $ v V.// [(findElem @key @ts, Any ft)]
 -- In an equation for `it_a6Nix':
 --     it_a6Nix = update (Key @"key1") Maybe result2
 
-insert ∷ RequireUniqueKey (Eval (UniqueKey key ts)) key t ts ⇒ Key key → f t → OpenProduct f ts → OpenProduct f ('(key, t) ': ts)
-insert _ ft (OpenProduct v) = OpenProduct $ V.cons (Any ft) v
-
 -- OverloadedLabels:  "get #example foo" ⇒ "get (Key @"example") foo"
 -- Notice that the instance head is not of the form
 -- `IsLabel key (Key key)`, but instead has two type variables
@@ -192,7 +189,7 @@ overloadedKey = get #key1 (oldInsert #key1 (Just "hello1") nil)
 
 type RequireUniqueKey ∷ Bool → Symbol → k → [(Symbol, k)] → Constraint
 type family RequireUniqueKey result key t ts where
-  RequireUniqueKey 'True key t ts = () -- ! 2
+  RequireUniqueKey 'True key t ts = () -- UNIT CONSTRAINT (); needs ConstraintKinds or the like
   RequireUniqueKey 'False key t ts =
     TypeError
       ( 'Text "Attempting to add a field named `"
@@ -204,9 +201,30 @@ type family RequireUniqueKey result key t ts where
             ':<>: 'Text key
             ':<>: 'Text "' with type "
             ':<>: 'ShowType (LookupType key ts)
-          ':$$: 'Text "Consider using `update' " -- ! 3
+          ':$$: 'Text "Consider using `update' "
             ':<>: 'Text "instead of `insert'."
       )
+
+insert ∷ RequireUniqueKey (Eval (UniqueKey key ts)) key t ts ⇒ Key key → f t → OpenProduct f ts → OpenProduct f ('(key, t) ': ts)
+insert _ ft (OpenProduct v) = OpenProduct $ V.cons (Any ft) v
+
+-- >>> let result1 = insert (Key @"key1") (Just "hello2") nil
+-- >>> let result2 = insert (Key @"key2") (Just True) result1
+-- >>> :type result2
+-- result2 :: OpenProduct Maybe '[ '("key2", Bool), '("key1", String)]
+
+-- >>> let result1 = insert (Key @"key1") (Just "hello2") nil
+-- >>> let result2 = insert (Key @"key1") (Just True) result1
+-- >>> :type result2
+-- Attempting to add a field named `key1' with type Bool to an OpenProduct.
+-- But the OpenProduct already has a field `key1' with type FromMaybe
+--                                                            Stuck
+--                                                          =<< Lookup "key1" '[ '("key1", String)]
+-- Consider using `update' instead of `insert'.
+-- In the expression: insert (Key @"key1") (Just True) result1
+-- In an equation for `result2_a17HT':
+--     result2_a17HT = insert (Key @"key1") (Just True) result1
+
 
 -- upsert
 --     ∷ Key key

@@ -47,6 +47,7 @@ data Meta
 
 -}
 
+-- conventionally the carrier typeclass is prefixed with`G`
 type GEqOmit :: [Symbol] -> (k -> Type) -> Constraint
 class GEqOmit o f where
   geqomit :: Proxy o -> f x -> f x -> Bool
