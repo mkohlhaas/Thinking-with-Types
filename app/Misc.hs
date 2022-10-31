@@ -12,6 +12,14 @@ module Misc where
 
 import GHC.TypeLits (ErrorMessage (ShowType, Text, (:$$:), (:<>:)), TypeError)
 
+-- # Refl
+data a :~: b where
+  Refl ∷ a :~: a
+
+---------------------------
+-- Custom Error Messages --
+---------------------------
+
 -- The following four means of constructing ERRORMESSAGEs are available to us:
 -- - 'Text (of kind SYMBOL → ERRORMESSAGE.) Emits the symbol verbatim. (Note that this is not Data.Text.Text.)
 -- - 'ShowType (of kind K → ERRORMESSAGE.) Prints the name of the given type.
@@ -19,14 +27,6 @@ import GHC.TypeLits (ErrorMessage (ShowType, Text, (:$$:), (:<>:)), TypeError)
 -- - '(:$$:) (of kind ERRORMESSAGE → ERRORMESSAGE → ERRORMESSAGE.) Append one ERRORMESSAGE vertically atop another.
 
 -- custom error message
--- >>> 1 True
--- Attempting to interpret a number as a function
--- in the type 'Bool -> t_akEL[sk:1]'
--- Did you forget to specify the function you wanted?
--- When checking the inferred type
---   it_akDz :: forall {t}. (TypeError ...) => t
-
--- # showFunc
 instance
   ( TypeError
       ( 'Text "Attempting to interpret a number as a function"
@@ -38,26 +38,12 @@ instance
   ) ⇒
   Num (a → b)
 
--- Behavour depends on ScopedTypeVariables.
-broken ∷ (a → b) → a → b
-broken f a = apply
-  where
-    -- apply ∷ b -- this is a different `b`
-    apply = f a
-
--- The `∀ a b` quantifier introduces a type scope and exposes the type variables `a` and `b` to the remainder of the function.
--- This allows us to reuse `b` when adding the type signature to apply, rather than introducing a new type variable.
-working ∷ ∀ a b. (a → b) → a → b
-working f a = apply
-  where
-    apply ∷ b -- same `b`
-    apply = f a
-
--- # Refl
-data a :~: b where
-  Refl ∷ a :~: a
-
-data Proxy a = Proxy
+-- >>> 1 True
+-- Attempting to interpret a number as a function
+-- in the type 'Bool -> t_akEL[sk:1]'
+-- Did you forget to specify the function you wanted?
+-- When checking the inferred type
+--   it_akDz :: forall {t}. (TypeError ...) => t
 
 {-
 
@@ -66,30 +52,3 @@ data Maybe a
   | Nothing
 
 -}
-
--- >>> :type fmap
--- fmap ∷ Functor f ⇒ (a → b) → f a → f b
-
--- Functor f is now Maybe
--- >>> :set -XTypeApplications
--- >>> :type fmap @Maybe
--- fmap @Maybe ∷ (a → b) → Maybe a → Maybe b
-
--- We've applied the type Maybe to the polymorphic function fmap in the same way we can apply value arguments to functions.
-
--- Two rules:
--- 1. Types are applied in the same order they appear in a type signature - including its context and ∀ quantifiers!
---    Type applying Int to `a → b → a`        results in `Int → b → Int`.
---    Type applying Int to `∀ b a. a → b → a` results in `a → Int → a`.
--- 2. We can avoid applying a type with an underscore: `@_`.
---    This means we can also specialize type variables which are not the first in line.
-
--- >>> :t fmap
--- fmap ∷ Functor f ⇒ (a → b) → f a → f b
-
--- >>> :set -XTypeApplications
--- >>> :t fmap @_ @Int @Bool
--- fmap @_ @Int @Bool ∷ Functor w ⇒ (Int → Bool) → w Int → w Bool
-
--- Pay attention to type order whenever you write a function that might be type applied.
--- As a guiding principle, the hardest types to infer must come first.

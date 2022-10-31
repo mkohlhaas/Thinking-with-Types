@@ -9,7 +9,7 @@ module Constraints where
 
 import Data.Kind (Constraint)
 
--- The CONSTRAINT kind is reserved for things that can appear on the left side of the fat context arrow (=>).
+-- The CONSTRAINT kind is reserved for things that can appear on the left side of the fat context arrow (⇒).
 -- This includes:
 -- 1. Fully saturated typeclasses, e.g. `Show a`,
 -- 2. Tuples of other constraints, e.g. `(Show a, Eq a)`

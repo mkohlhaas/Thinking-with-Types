@@ -5,15 +5,14 @@
       - [Propositions as Types - Computerphile](https://www.youtube.com/watch?v=SknxggwRPzU)
       - app/Algebra.hs
     - Chapter 2: Terms, Types and Kinds
+      - [Type Families in Haskell: The Definitive Guide](https://serokell.io/blog/type-families-haskell)
       - app/Kinds.hs
     - Chapter 3: Variance
       - app/PosNeg.hs
   - Part II: Lifting Restrictions
     - Chapter 4: Working with Types
-      - app/Misc.hs
       - app/TypeApps.hs
     - Chapter 5: Constraints and GADTs
-      - app/Constraints.hs
       - app/GADTs.hs
     - Chapter 6: Rank-NTypes
       - app/RankN.hs
