@@ -1,11 +1,21 @@
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE UnicodeSyntax #-}
 
+---------------------------------
+-- Chapter 7: ExistentialTypes --
+---------------------------------
+
+-- 7.1   Existential Types and Eliminators
+-- 7.1.1 Dynamic Types
+-- 7.1.2 Generalized Constraint Kinded Existentials
+-- 7.2   Scoping Information Existentials (in separate file app/ST.hs)
+
 module ST where
 
---------------------------------------
--- Scoping Information Existentials --
---------------------------------------
+-------------------------------------------
+-- 7.2 Scoping: Information Existentials --
+-------------------------------------------
 
 -- Existential types can be used to prevent information from leaking outside of a desired scope.
 -- E.g., it means we can ensure that allocated resources can't escape a pre-specified region.
@@ -14,22 +24,21 @@ module ST where
 -- Because existential types are unable to exist outside of their quantifier, we can use it as a scoping mechanism.
 -- By tagging sensitive data with an existential type, the type system will refuse any attempts to move this data outside of its scope.
 
--- Haskell's ST (strict state) monad is the most famous example of this approach,
--- lending its name to the approach: the ST trick.
+-- Haskell's ST (STRICT STATE) monad is the most famous example of this approach, lending its name to the approach: the ST trick.
 -- If you're unfamiliar with it, ST allows us to write stateful code including mutable variables to perform computations,
--- so long as the statefulness never leaves the monad.
+-- as long as the statefulness never leaves the monad.
 -- In other words, ST allows you to compute pure functions using impure means.
 
 -- The amazing thing is that ST is not some magical compiler primitive - it's just library code.
--- And we can implement it ourselves, assuming we're comfortable using a little unsafePerformIO!
+-- And we can implement it ourselves, assuming we're comfortable using a little `unsafePerformIO`!
 
 -- It's not the presence of mutable variables that makes code hard to reason about.
--- So long as all of its mutations are kept local, we know that a computation is pure.
+-- As long as all of its mutations are kept local, we know that a computation is pure.
 -- Mutable variables on their own do not cause us to lose referential transparency.
--- Referential transparency is lost when code relies on external mutable variables.
+-- Referential transparency is lost when code relies on EXTERNAL MUTABLE VARIABLES.
 -- Doing so creates an invisible data dependency between our code and the state of its external variables.
 
--- It's completely safe to have mutable variables so long as you can prove they never escape.
+-- It's completely safe to have mutable variables as long as you can prove they never escape.
 -- The ST trick exists to prevent such things from happening.
 
 import Data.IORef
@@ -37,20 +46,24 @@ import System.IO.Unsafe (unsafePerformIO)
 
 -- At its heart, ST is just the Identity monad with a phantom `s` parameter.
 -- The phantom type variable `s` exists only as a place to put our existential type tag.
-newtype ST s a = ST {unsafeRunST ∷ a}
+newtype ST s a = ST {unsafeRunST ∷ a} deriving (Show)
 
 -- Applicative and Monad instances can be provided for ST.
 -- To ensure that our "unsafe" IO is performed while it's actually still safe, these instances must be explicitly strict.
 -- This is not necessary in general to perform the ST trick.
 -- It's only because we will be using unsafePerformIO.
 instance Functor (ST s) where
+  fmap ∷ (a → b) → ST s a → ST s b
   fmap f (ST a) = seq a . ST $ f a
 
 instance Applicative (ST s) where
+  pure ∷ a → ST s a
   pure = ST
+  (<*>) ∷ ST s (a → b) → ST s a → ST s b
   ST f <*> ST a = seq f . seq a . ST $ f a
 
 instance Monad (ST s) where
+  (>>=) ∷ ST s a → (a → ST s b) → ST s b
   ST a >>= f = seq a $ f a
 
 -- Mutable variables can be introduced inside of the ST monad.
@@ -60,23 +73,25 @@ instance Monad (ST s) where
 -- This is not accidental. `s` acts as a label irrevocably knotting a STRef with the ST context.
 newtype STRef s a = STRef {unSTRef ∷ IORef a}
 
--- Function wrappers for STRef around IORef.
+----------------------------------------------
+-- Function wrappers for STRef around IORef --
+----------------------------------------------
 
--- create new STRefs (newIORef)
+-- 1. Create a new STRef (newIORef).
 -- Creating a STRef gives us one whose `s` parameter is the same as ST's `s`.
--- This is the irrevocable linking between the two types.
+-- This is the IRREVOCABLE LINKING between the two types.
 newSTRef ∷ a → ST s (STRef s a)
 newSTRef = pure . STRef . unsafePerformIO . newIORef
 
--- read STRefs (readIORef)
+-- 2. Read STRefs (readIORef).
 readSTRef ∷ STRef s a → ST s a
 readSTRef = pure . unsafePerformIO . readIORef . unSTRef
 
--- write STRefs (writeIORef)
+-- 3. Write STRefs (writeIORef).
 writeSTRef ∷ STRef s a → a → ST s ()
 writeSTRef ref = pure . unsafePerformIO . writeIORef (unSTRef ref)
 
--- modify STRefs (readSTRef and writeSTRef)
+-- 4. Modify STRefs (readSTRef and writeSTRef).
 modifySTRef ∷ STRef s a → (a → a) → ST s ()
 modifySTRef ref f = do
   a ← readSTRef ref
@@ -93,7 +108,9 @@ modifySTRef ref f = do
 -- We exploit this fact that existentials can't leave their quantifier in order to scope our data.
 -- The "quarantined zone" is defined with an existential quantifier, we tag our quarantined data
 -- with the resulting existential type, and the type system does the rest.
-runST ∷ (∀ s. ST s a) → a
+
+-- runST ∷ ST s a → a --------- leaking version (we       have access to what's inside the ST monad)
+runST ∷ (∀ s. ST s a) → a -- non-leaking     (we don't have access to what's inside the ST monad)
 runST = unsafeRunST
 
 safeExample ∷ ST s String
@@ -106,16 +123,24 @@ safeExample = do
 -- "hello world"
 
 -- >>> :type runST safeExample
--- runST safeExample :: String
+-- runST safeExample ∷ String
 
 -- The type system disallows any code that would leak a reference to a STRef.
 -- >>> runST (newSTRef True)
 -- Couldn't match type ...
 
+-- runST is leaking - we get access to the mutable variable
+-- >>> readSTRef $ runST (newSTRef True)
+-- ST {unsafeRunST = True}
+
+-- runST is non-leaking
+-- >>> readSTRef $ runST (newSTRef True)
+-- Couldn't match type `s' with `s' ...
+
 -- >>> :type newSTRef True
 -- newSTRef True ∷ ST s (STRef s Bool)
 
--- signature of runST for `newSTRef True`
+-- 1. Signature of runST for `newSTRef True`.
 --    Type variable `s` is introduced and scoped.
 --            |                    Later `s` is referenced.
 --            |              But at this point the type no longer exists.
@@ -123,13 +148,13 @@ safeExample = do
 --            |                               |
 -- runST ∷ (∀ s. ST s (STRef s Bool)) → STRef s Bool
 
--- signature of runST for safeExample
+-- 2. Signature of runST for safeExample.
 --    Type variable `s` is introduced and scoped.
 --            |                    There is no reference to `s`.
 --            |                             |
--- runST ∷ (∀ s. ST s (STRef s String)) → String
+-- runST ∷ (∀ s. ST s String) → String
 
--- GHC calls `s` a rigid skolem type variable.
+-- GHC calls `s` a RIGID SKOLEM TYPE VARIABLE.
 -- Rigid variables are those that are constrained by a type signature written by a programmer.
 -- In other words, they are not allowed to be type inferred.
 -- A skolem is, for all intents and purposes, any existential type.

@@ -4,15 +4,22 @@
 {-# LANGUAGE UnicodeSyntax #-}
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 
+----------------------
+-- Chapter 8: Roles --
+----------------------
+
+-- 8.1 Coercions
+-- 8.2 Roles
+
 module Roles where
 
 import Data.Coerce (Coercible, coerce)
 import Data.Map as M
 import Data.Monoid (Product (..), Sum (..))
 
------------------
--- Coercisions --
------------------
+---------------------
+-- 8.1 Coercisions --
+---------------------
 
 newtype ZipList a = ZipList
   { getZipList ∷ [a]
@@ -116,9 +123,9 @@ asdf = coerce (M.singleton 'S' True) ∷ M.Map Char (Reverse Bool)
 -- Couldn't match type `Char' with `Reverse Bool'
 --   arising from a use of `coerce'
 
------------
--- Roles --
------------
+---------------
+-- 8.2 Roles --
+---------------
 
 -- What differentiates k from v in `Map k v`?
 -- Their roles are different.

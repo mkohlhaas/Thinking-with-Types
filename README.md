@@ -17,6 +17,7 @@
     - Chapter 6: Rank-NTypes
       - app/RankN.hs
     - Chapter 7: ExistentialTypes
+      - app/ExistentialTypes.hs
       - app/ST.hs
     - Chapter 8: Roles
       - app/Roles.hs

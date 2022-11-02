@@ -77,6 +77,18 @@ data Spin = Up | Down
 
 --  |Bool| = 2 ⇒ 2! = 2 isomorphisms
 
+-- >>> :type (spinToBool1 . boolToSpin1)
+-- (spinToBool1 . boolToSpin1) :: Bool -> Bool
+
+-- >>> :type (boolToSpin1 . spinToBool1)
+-- (boolToSpin1 . spinToBool1) :: Spin -> Spin
+
+-- >>> :type (spinToBool2 . boolToSpin2)
+-- (spinToBool2 . boolToSpin2) :: Bool -> Bool
+
+-- >>> :type (boolToSpin2 . spinToBool2)
+-- (boolToSpin2 . spinToBool2) :: Spin -> Spin
+
 -- 1st isomorphism
 spinToBool1 ∷ Spin → Bool
 spinToBool1 Up = False
@@ -133,6 +145,12 @@ prodUnitTo a = (a, ())
 prodUnitFrom ∷ (a, ()) → a
 prodUnitFrom (a, ()) = a
 
+-- >>> :type prodUnitFrom . prodUnitTo
+-- prodUnitFrom . prodUnitTo :: c -> c
+
+-- >>> :type prodUnitTo . prodUnitFrom
+-- prodUnitTo . prodUnitFrom :: (b, ()) -> (b, ())
+
 -- We can prove that `a + 0 = a` by showing an isomorphism between e.g. `Either a Void` and `a`.
 
 -- `Either a b` is a sum type: |Either a b| = |a| + |b|
@@ -149,6 +167,12 @@ sumUnitTo (Right v) = absurd v
 
 sumUnitFrom ∷ a → Either a Void
 sumUnitFrom = Left
+
+-- >>> :type sumUnitFrom . sumUnitTo
+-- sumUnitFrom . sumUnitTo :: Either b Void -> Either b Void
+
+-- >>> :type sumUnitTo . sumUnitFrom
+-- sumUnitTo . sumUnitFrom :: c -> c
 
 -- Function types also have an encoding as statements about cardinality. They correspond to exponentialization.
 -- E.g, there are exactly four (2^2) inhabitants of the type `Bool → Bool`.
