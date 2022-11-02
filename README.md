@@ -23,7 +23,6 @@
       - app/Roles.hs
   - Part III: Computing at the Type-Level
     - Chapter 9: AssociatedFamilies
-      - app/PrintfTypes.hs
       - app/Printf.hs
     - Chapter 10: First Class Families
       - app/Defunc.hs

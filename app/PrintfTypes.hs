@@ -1,12 +1,13 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE InstanceSigs #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE StandaloneKindSignatures #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UnicodeSyntax #-}
-{-# LANGUAGE InstanceSigs #-}
+{-# LANGUAGE NoStarIsType #-}
 
 module PrintfTypes where
 
@@ -19,7 +20,7 @@ module PrintfTypes where
 -- The TYPEs describe parameters, and the SYMBOLs are literal pieces of text to output.
 
 import Data.Kind (Constraint, Type)
-import GHC.TypeLits (Symbol)
+import GHC.TypeLits (Nat, Symbol)
 
 ----------------------------------
 -- Building Types from a Schema --
@@ -90,6 +91,11 @@ instance HasPrintf a ⇒ HasPrintf ((param ∷ Type) :<< a) where
 -- Printf(Int :<< ":" :<< Bool :<< "!") ∷ *
 -- = Int → Bool → [Char]
 
+wrongPrintf :: a -> String -> String
+wrongPrintf _ str = show str ++ " world!"
+
+type Pad :: Nat -> k -> Type
+data Pad n a
 type family AlwaysUnit a where
   AlwaysUnit a = ()
 

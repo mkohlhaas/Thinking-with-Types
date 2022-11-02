@@ -14,7 +14,7 @@
 module Roles where
 
 import Data.Coerce (Coercible, coerce)
-import Data.Map as M
+import Data.Map (Map, singleton)
 import Data.Monoid (Product (..), Sum (..))
 
 ---------------------
@@ -42,18 +42,18 @@ newtype ZipList a = ZipList
 -- >>> ZipList [Sum 54, Sum 46]
 -- ZipList {getZipList = [Sum {getSum = 54},Sum {getSum = 46}]}
 
--- This zero-cost property of newtypes has profound implications for performance.
+-- This zero-cost property of newtypes has profound implications on performance.
 -- It gives us the ability to reinterpret a value of one type as a value of another and do it in O(0) time.
+
+-- The `Coercible a b` constraint is a proof that the types `a` and `b` have the same runtime representation.
 -- coerce ∷ Coercible a b ⇒ a → b
 
--- The `Coercible a b` constraint is a proof that the types `a` and `b` do, in fact, have the same runtime representation.
-
 -- Coercible is a magic constraint.
--- The compiler will write instances of it for you, and in fact, insists on this.
--- It's actually an error to write your own!
+-- The compiler will write instances of it for you and insists on this.
+-- You cannot write your own!
 
 -- >>> instance Coercible a b
--- Class `Coercible' does not support user-specified instances
+-- Class `Coercible' does not support user-specified instances ...
 
 -- If we wanted to sum a list of Ints, we could use the Sum Int monoid instance.
 -- Requires traversing the entire list with an fmap just in order to get the right Monoid instance in scope.
@@ -61,15 +61,13 @@ slowSum ∷ [Int] → Int
 slowSum = getSum . mconcat . fmap Sum
 
 -- >>> fmap Sum [1..5]
--- [Sum {getSum = 1},Sum {getSum = 2},Sum {getSum = 3},Sum {getSum = 4},Sum {getSum = 5}]
-
 -- >>> mconcat $ fmap Sum [1..5]
--- Sum {getSum = 15}
-
 -- >>> slowSum [1..5]
+-- [Sum {getSum = 1},Sum {getSum = 2},Sum {getSum = 3},Sum {getSum = 4},Sum {getSum = 5}]
+-- Sum {getSum = 15}
 -- 15
 
--- `coerce` can be used to massage data from one type into another without paying any runtime cost.
+-- `coerce` can be used to massage data from one type into another without paying any runtime costs.
 -- Using `coerce` to transform `[Int]` into `[Sum Int]` in O(0) time, giving us access to the right Monoid for free.
 fastSum ∷ [Int] → Int
 fastSum = getSum . mconcat . coerce
@@ -77,22 +75,23 @@ fastSum = getSum . mconcat . coerce
 -- >>> fastSum [1..5]
 -- 15
 
--- General RULE: if you ever find yourself writing `fmap NewtypeCtor`, it should be replaced with coerce (unless the functor instance is polymorphic).
+-- General RULE: if you ever find yourself writing `fmap TypeConstructor`, it should be replaced with coerce (unless the functor instance is polymorphic).
 
 -- Coercible corresponds to representational equality.
 -- Laws of equality:
--- - Reflexivity: `Coercible a a` is true for any type a.
--- - Symmetry: `Coercible a b` implies `Coercible b a`.
--- - Transitivity: Given `Coercible a b` and `Coercible b c` we have `Coercible a c`.
+-- - Reflexivity: `Coercible a a` = true ∀ a.
+-- - Symmetry:    `Coercible a b` ⇒ `Coercible b a`.
+-- - Transitivity: Given `Coercible a b` and `Coercible b c` ⇒ `Coercible a c`.
 
 sumToProd ∷ Product Int
-sumToProd = coerce (1867 ∷ Sum Int) ∷ Product Int
+sumToProd = coerce (1867 ∷ Sum Int)
 
 -- So it's perfectly acceptable to coerce a Sum a into a Product a.
 -- >>> sumToProd
 -- Product {getProduct = 1867}
 
--- Are representationally equal types always safely interchangeable? They're not! E.g.
+-- Qustion: Are representationally equal types always safely interchangeable?
+-- Answer:  They're not! E.g.
 -- insert ∷ Ord k ⇒ k → v → Map k v → Map k v
 -- `Map k v` is a container providing map lookups with key k and value v.
 -- It's represented as a balanced tree, ordered via an Ord k instance.
@@ -111,17 +110,16 @@ instance Ord a ⇒ Ord (Reverse a) where
 -- They have completely different layouts in memory!
 
 -- Note: The layout of `Map k v` does not depend on `v`.
--- We are free to safely coerce `Map k v` as `Map k v`.
+-- We are free to safely coerce `Map k v` as `Map k v'`.
 
-asdf ∷ Map Char (Reverse Bool)
-asdf = coerce (M.singleton 'S' True) ∷ M.Map Char (Reverse Bool)
-
--- >>> coerce (M.singleton 'S' True ) ∷ M.Map Char (Reverse Bool)
+-- a map with a single element
+-- coercing `Map k v` to `Map k v'`
+-- >>> coerce (singleton 'S' True ) ∷ Map Char (Reverse Bool)
 -- fromList [('S',Reverse {getReverse = True})]
 
--- >>> coerce (M.singleton 'S' True ) ∷ M.Map (Reverse Bool) Char
--- Couldn't match type `Char' with `Reverse Bool'
---   arising from a use of `coerce'
+-- coercing `Map k v` to `Map k' v`
+-- >>> coerce (singleton 'S' True ) ∷ Map (Reverse Bool) Char
+-- Couldn't match type `Char' with `Reverse Bool' arising from a use of `coerce' ...
 
 ---------------
 -- 8.2 Roles --
@@ -134,19 +132,30 @@ asdf = coerce (M.singleton 'S' True) ∷ M.Map Char (Reverse Bool)
 -- THE ROLE SYSTEM ENSURES COERCIONS ARE SAFE.
 
 -- Every type parameter for a given type constructor is assigned a role.
--- NOMINAL:          The everyday notion of type-equality, corresponding to the `a ∼ b` constraint. E.g. Int is nominally equal only to itself.
--- REPRESENTATIONAL: Types `a` and `b` are representationally equal iff it’s safe to reinterpret the memory of an `a` as a `b`.
 -- PHANTOM:          Two types are always phantomly equal to one another.
+-- REPRESENTATIONAL: Types `a` and `b` are representationally equal iff it’s safe to reinterpret the memory of an `a` as a `b`.
+-- NOMINAL:          The everyday notion of type-equality, corresponding to the `a ∼ b` constraint. E.g. Int is nominally equal only to itself.
 
--- In the newtype `Sum a`, we say that a is at role REPRESENTATIONAL.
--- `Coercible (Map k1 v) (Map k2 v)` is only the case when `k1 ∼ k2`. In `Coercible k1 k2` `k` must be at role NOMINAL.
--- The type variable `a` in `data Proxy a = Proxy` is at role PHANTOM. `Coercible (Proxy a) (Proxy b)` is always true.
+-- Examples:
+-- 1. The type variable `a` in `data Proxy a = Proxy` is at role PHANTOM. `Coercible (Proxy a) (Proxy b)` is always true.
+-- 2. In the newtype `Sum a`, we say that a has the REPRESENTATIONAL role.
+-- 3. Coercible (Map k1 v) (Map k2 v)` is only the case when `k1 ∼ k2`. In `Coercible k1 k2` `k` must be at role NOMINAL.
+--    This is the only way to make sure there exists an Ord instance.
+
+-- The syntax for role annotations is `type role TypeConstructor role1 role2 ...`,
+-- where roles are given for type variables in the same order they're defined.
+
+-- Exercise 8.2-i: What is the role signature of Either a b?
+-- type role Either representational representational
+
+-- Exercise 8.2-ii: What is the role signature of Proxy a?
+-- type role Proxy phantom
 
 -- There is an inherent ordering in roles:
 -- phantom < representational < nominal
--- Upgrading from a weaker role to a stronger one is known as STRENGTHENING it.
+-- Upgrading from a weaker role to a stronger one is known as STRENGTHENING.
 
--- Just like types, roles are automatically inferred by the compiler, though they can be specified explicitly desired.
+-- Just like types, roles are automatically inferred by the compiler, though they can be specified explicitly.
 -- This inference works as follows:
 
 -- 1. All type parameters are assumed to be at role PHANTOM.
@@ -155,7 +164,7 @@ asdf = coerce (M.singleton 'S' True) ∷ M.Map Char (Reverse Bool)
 -- 3. The type constructor (∼) has two NOMINAL roles; any type parameter applied to a (∼) gets upgraded to
 --    nominal. GADTs and type families count as applying (∼).
 
--- Why must types used by type families must be at role nominal?
+-- Why must types used by type families be at role `nominal`?
 
 -- a type family that replaces Int with Bool (leaves any other type alone)
 type family IntToBool a where
@@ -173,9 +182,10 @@ data BST v = Empty | Branch (BST v) v (BST v)
 
 -- Roles are given for type variables in the same order they're defined.
 -- type role TypeConstructor role1 role2 ...
-type role BST nominal
+-- type role BST phantom ----------- weakening not allowed
+-- type role BST representational -- this is the role the role system found out
+-- type role BST nominal ----------- strengthening allowed
 
 -- It's only possible to STRENGTHEN inferred roles.
 -- type role BST phantom
 -- Compiler error: "Role mismatch on variable v: Annotation says phantom but role representational is required."
-
