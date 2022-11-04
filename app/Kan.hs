@@ -3,11 +3,25 @@
 
 {-# OPTIONS_GHC -Wno-unused-imports #-}
 
+--------------------------
+-- Chapter 13: Generics --
+--------------------------
+
+-- 13.1 Generic Representations
+-- 13.2 Deriving Structural Polymorphism
+-- 13.3 Using Generic Metadata
+-- 13.4 Performance
+-- 13.5 Kan Extensions
+
 module Kan where
 
 import Control.Monad.Codensity
 import Data.Functor.Day.Curried
 import Data.Functor.Yoneda
+
+-------------------------
+-- 13.5 Kan Extensions --
+-------------------------
 
 {-
 
