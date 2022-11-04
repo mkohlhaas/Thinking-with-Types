@@ -35,7 +35,7 @@ import GHC.TypeLits (ErrorMessage (ShowType, Text, (:$$:), (:<>:)), KnownNat, Na
 import GHC.Types
 import Unsafe.Coerce (unsafeCoerce)
 
--- An open sum is a container of a data whose type isn’t known statically.
+-- An open sum is a container of a data whose type isn't known statically.
 -- Furthermore, there are no guarantees that we know which types it might be,
 -- since the list of types itself might be polymorphic.
 
@@ -57,14 +57,6 @@ data OpenSum f ts where
 -- It's a common pattern in type level programming to label raw data constructors as Unsafe,
 -- and write smart constructors that enforce the safety.
 
--- >>> :kind! Bool
--- Bool ∷ Type
--- = Bool
-
--- >>> :kind! Int
--- Int ∷ Type
--- = Int
-
 -- The presence of `f` allows us to add a common shape to all the members of `ts`.
 -- E.g., `OpenSum ((→) String) '[Int, Bool]` is capable of storing `String → Int` and `String → Bool`.
 -- Users who just want to store regular types with no additional structure should let `f ∼ Identity`.
@@ -83,6 +75,7 @@ type FindElem ∷ k → [k] → Exp Nat
 type FindElem key ts = FromMaybe Stuck =<< FindIndex (TyEq key) ts
 
 -- Remember: At the type-level (<=<)/fish-operator acts like regular function composition (.), (=<<)/bind behaves like function application ($).
+
 -- FromMaybe ∷ ∀ k. k → Maybe k → k → Type
 -- =<< ∷ ∀ a b. (a → Exp b) → Exp a → b → Type
 -- FindIndex ∷ ∀ a. (a → Exp Bool) → [a] → Maybe Nat → Type

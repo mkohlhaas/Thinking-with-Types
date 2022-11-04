@@ -27,7 +27,10 @@
     - Chapter 10: First Class Families
       - app/Defunc.hs
       - app/FCTF.hs
-    - Chapter 11: Extensible Data
+    - Chapter 11: Extensible Data (rudimentary)
+      - [Open Sum Types in Haskell with world-peace](https://functor.tokyo/blog/2019-07-11-announcing-world-peace)
+        - Look at the source code to see how it works.
+      - [PureScript Variant](https://pursuit.purescript.org/packages/purescript-variant/)
       - app/OpenSum.hs
       - app/OpenProduct.hs
     - Chapter 12: Custom Type Errors
