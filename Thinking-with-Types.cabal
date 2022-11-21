@@ -1,0 +1,198 @@
+cabal-version: 2.4
+name:          Thinking-with-Types
+version:       0.1.0.0
+build-type:    Simple
+
+library AdHocSingletons
+    hs-source-dirs:     src/AdHocSingletons
+    default-language:   Haskell2010
+    default-extensions: UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:
+        base -any,
+        constraints -any,
+        transformers -any
+
+library Algebra
+    hs-source-dirs:     src/Algebra
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library Commander
+    hs-source-dirs:     src/Commander
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library Constraints
+    hs-source-dirs:     src/Constraints
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library Defunc
+    hs-source-dirs:     src/Defunc
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library DeriveAnyClass
+    hs-source-dirs:     src/DeriveAnyClass
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library Exercises
+    hs-source-dirs:     src/Exercises
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library ExistentialTypes
+    hs-source-dirs:     src/ExistentialTypes
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library FCTF
+    hs-source-dirs:     src/FCTF
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library GADTs
+    hs-source-dirs:     src/GADTs
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library JSONSchema
+    hs-source-dirs:     src/JSONSchema
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any,
+                        aeson,
+                        aeson-pretty,
+                        bytestring,
+                        mtl,
+                        text,
+                        vector
+
+library Kan
+    hs-source-dirs:     src/Kan
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any,
+                        kan-extensions
+
+library Kinds
+    hs-source-dirs:     src/Kinds
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any,
+                        mtl,
+                        transformers
+
+library Misc
+    hs-source-dirs:     src/Misc
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library NoImpredicativeTypes
+    hs-source-dirs:     src/NoImpredicativeTypes
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library OpenProduct
+    hs-source-dirs:     src/OpenProduct
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any,
+                        constraints,
+                        first-class-families,
+                        vector
+
+library OpenSum
+    hs-source-dirs:     src/OpenSum
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any,
+                        first-class-families,
+                        ghc-prim
+
+library PosNeg
+    hs-source-dirs:     src/PosNeg
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library Printf
+    hs-source-dirs:     src/Printf
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library PrintfTypes
+    hs-source-dirs:     src/PrintfTypes
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library RankN
+    hs-source-dirs:     src/RankN
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any,
+                        transformers
+
+library Roles
+    hs-source-dirs:     src/Roles
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any,
+                        containers
+
+library ST
+    hs-source-dirs:     src/ST
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library TicTacToe
+    hs-source-dirs:     src/TicTacToe
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
+
+library TypeApps
+    hs-source-dirs:     src/TypeApps
+    default-language:   Haskell2010
+    default-extensions: RecordWildCards UnicodeSyntax
+    ghc-options:        -Wall
+    build-depends:      base -any
