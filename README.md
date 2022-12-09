@@ -1,48 +1,48 @@
 
 - Table of Contents
   - Part I: Fundamentals
-    - Chapter 1: The Algebra Behind Types
+    - ✓/✗ Chapter 1: The Algebra Behind Types
       - [Propositions as Types - Computerphile](https://www.youtube.com/watch?v=SknxggwRPzU)
       - src/Algebra/Algebra.hs
-    - Chapter 2: Terms, Types and Kinds
+    - ✓/✗ Chapter 2: Terms, Types and Kinds
       - [Type Families in Haskell: The Definitive Guide](https://serokell.io/blog/type-families-haskell)
       - src/Kinds/Kinds.hs
-    - Chapter 3: Variance
+    - ✓/✗ Chapter 3: Variance
       - src/PosNeg/PosNeg.hs
   - Part II: Lifting Restrictions
-    - Chapter 4: Working with Types
+    - ✓/✗ Chapter 4: Working with Types
       - src/TypeApps/TypeApps.hs
-    - Chapter 5: Constraints and GADTs
+    - ✓/✗ Chapter 5: Constraints and GADTs
       - src/GADTs/GADTs.hs
-    - Chapter 6: Rank-NTypes
+    - ✓/✗ Chapter 6: Rank-NTypes
       - src/RankN/RankN.hs
-    - Chapter 7: ExistentialTypes
+    - ✓/✗ Chapter 7: ExistentialTypes
       - src/ExistentialTypes/ExistentialTypes.hs
       - src/ST/ST.hs
-    - Chapter 8: Roles
+    - ✓/✗ Chapter 8: Roles
       - src/Roles/Roles.hs
   - Part III: Computing at the Type-Level
-    - Chapter 9: AssociatedFamilies
+    - ✓/✗ Chapter 9: AssociatedFamilies
       - src/Printf/Printf.hs
-    - Chapter 10: First Class Families
+    - ✓/✗ Chapter 10: First Class Families
       - src/Defunc/Defunc.hs
       - src/FCTF/FCTF.hs
-    - Chapter 11: Extensible Data (rudimentary)
+    - ✗ Chapter 11: Extensible Data (rudimentary)
       - [Open Sum Types in Haskell with world-peace](https://functor.tokyo/blog/2019-07-11-announcing-world-peace)
         - Look at the source code to see how it works.
       - [PureScript Variant](https://pursuit.purescript.org/packages/purescript-variant/)
       - src/OpenSum/OpenSum.hs
       - src/OpenProduct/OpenProduct.hs
-    - Chapter 12: Custom Type Errors
+    - ✓/✗ Chapter 12: Custom Type Errors
       - src/Misc/Misc.hs
-    - Chapter 13: Generics
+    - ✓/✗ Chapter 13: Generics
       - src/DeriveAnyClass/DeriveAnyClass.hs
       - (misc/Generic/Omit.hs)
       - src/JSONSchema/JSONSchema.hs
       - misc/InspectionTesting.hs
       - src/Kan/Kan.hs
-    - Chapter 14: Indexed Monads (unfinished)
-    - Chapter 15: DependentTypes (unfinished)
+    - ✗ Chapter 14: Indexed Monads (unfinished)
+    - ✗ Chapter 15: DependentTypes (unfinished)
       - src/AdHocSingletons/AdHocSingletons.hs
       - misc/Singletons/Singletons.hs
       - misc/SingletonsTH/SingletonsTH.hs
